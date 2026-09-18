@@ -274,7 +274,7 @@ ul.plain{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;g
 <script>
 "use strict";
 /* ---------- נתונים קבועים (כלליים, בלי שום פרט אישי) ---------- */
-const VERSION = "1.5 · 18.9.2026";
+const VERSION = "1.6 · 18.9.2026";
 const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.126.0/+esm";
 const MODELS = [
   {id:"claude-opus-5",    name:"Opus 5, הכי חכם",        note:"ברירת מחדל"},
@@ -713,10 +713,12 @@ function screenActivate(dish){
   };
   $("#actPaste").onclick=async()=>{
     try{ const t=await navigator.clipboard.readText(); const k=pull(t);
-      if(k){ fld.value=k; msg.textContent="הקוד הודבק."; go(); } else { msg.textContent="בלוח ההעתקה אין קוד. העתיקו את ההודעה עם הקוד ונסו שוב."; } }
+      if(k){ fld.value=k; pasted(); } else { msg.textContent="בלוח ההעתקה אין קוד. העתיקו את ההודעה עם הקוד ונסו שוב."; } }
     catch(e){ msg.textContent="לחצו לחיצה ארוכה בשדה שלמטה ובחרו הדבקה."; fld.focus(); }
   };
-  fld.oninput=()=>{ if(pull(fld.value)) msg.textContent="הקוד הודבק. לחצו בדיקה ושמירה."; };
+  const pasted=()=>{ const nm=$("#actName"); msg.textContent=nm?"הקוד הודבק ✓ עכשיו כותבים את השם ולוחצים בדיקה ושמירה.":"הקוד הודבק ✓ עכשיו לוחצים בדיקה ושמירה.";
+    $("#actGo").classList.remove("sec"); $("#actPaste").classList.add("sec"); if(nm) nm.focus(); };
+  fld.oninput=()=>{ if(pull(fld.value)) pasted(); };
   $("#actGo").onclick=go; $("#actBack").onclick=home;
 }
 function screenMemo(m){
