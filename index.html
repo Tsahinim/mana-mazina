@@ -688,12 +688,12 @@ function screenActivate(dish){
   F=null;
   render(`<section class="screen">
     <div class="qhead"><span class="badge" aria-hidden="true">🔑</span><h2>הפעלה, פעם אחת</h2></div>
-    <p class="lead">מעתיקים את קוד ההפעלה מההודעה שקיבלתם, ולוחצים כאן:</p>
+    <p class="lead">מעתיקים את קוד ההפעלה מההודעה שקיבלתם (לחיצה ארוכה על ההודעה, "העתקה"), ולוחצים כאן:</p>
     <button class="cta" id="actPaste">הדבקת הקוד</button>
     <label class="f">או מדביקים ידנית<input class="field" id="actKey" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-..."></label>
     ${S.name?"":`<label class="f">שם הילדה (לא חובה)<input class="field" id="actName" type="text" autocomplete="off"></label>`}
     <div id="actMsg" class="small" aria-live="polite" style="min-height:1.5em"></div>
-    <div class="bottom flat"><button class="cta sec" id="actGo">בדיקה ושמירה</button><div class="linkrow"><button class="link" id="actBack">חזרה</button></div></div></section>`);
+    <div class="bottom flat"><button class="cta sec" id="actGo">בדיקה ושמירה</button><div class="linkrow"><button class="link" id="actBack">אין לי קוד, רק להציץ בהדגמה</button></div></div></section>`);
   const msg=$("#actMsg"), fld=$("#actKey");
   const pull=t=>{ const m=String(t||"").match(/sk-ant-[A-Za-z0-9_\-]{20,}/); return m?m[0]:""; };
   const go=async()=>{
@@ -974,7 +974,7 @@ $("#btnSettings").onclick=()=>sheetSettings();
 $("#btnTips").onclick=sheetTips;
 
 /* ---------- התחלה ---------- */
-home();
+if(S.apiKey) home(); else screenActivate();
 </script>
 </body>
 </html>
