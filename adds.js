@@ -39,21 +39,21 @@ const ADDS = [
  },
  {
   "id": "bulgarian",
-  "label": "גבינה בולגרית מפוררת",
-  "amount": "קובייה, 30 גרם",
+  "label": "גבינה בולגרית, קוביות 5%",
+  "amount": "2 כפות גדושות, בערך 30 גרם",
   "g": "dairy",
   "k": "dairy",
   "gives": [
    "סידן",
    "חלבון"
   ],
-  "kcal": 30,
-  "protein": 4.2,
-  "calcium": 120,
-  "iron": 0.1,
+  "kcal": 36,
+  "protein": 5.4,
+  "calcium": 108,
+  "iron": 0.0,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Israeli label, Bulgarian cheese 5%"
+  "v": true,
+  "src": "Manufacturer label: Tnuva Piraeus Bulgarian 5% (via FoodsDictionary, updated 23.5.2022)"
  },
  {
   "id": "mozzarella",
@@ -117,13 +117,13 @@ const ADDS = [
   "gives": [
    "אנרגיה"
   ],
-  "kcal": 48,
+  "kcal": 49,
   "protein": 0.9,
   "calcium": 30,
   "iron": 0.0,
   "vitc": 0,
-  "v": false,
-  "src": "pending: cooking cream 15%"
+  "v": true,
+  "src": "USDA SR Legacy: mean of Cream, half and half (10.5% fat) and Cream, light (19% fat), approximates 15% cooking cream"
  },
  {
   "id": "butter",
@@ -175,8 +175,8 @@ const ADDS = [
   "calcium": 228,
   "iron": 0.1,
   "vitc": 1,
-  "v": false,
-  "src": "pending: Yogurt, fruit, low fat"
+  "v": true,
+  "src": "USDA SR Legacy: Yogurt, fruit, low fat, 10 grams protein per 8 ounce"
  },
  {
   "id": "pudding",
@@ -191,10 +191,10 @@ const ADDS = [
   "kcal": 178,
   "protein": 2.6,
   "calcium": 64,
-  "iron": 0.6,
+  "iron": 1.6,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Puddings, chocolate, ready-to-eat"
+  "v": true,
+  "src": "USDA SR Legacy: Puddings, chocolate, ready-to-eat"
  },
  {
   "id": "ice_cream",
@@ -211,8 +211,8 @@ const ADDS = [
   "calcium": 83,
   "iron": 0.1,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Ice creams, vanilla"
+  "v": true,
+  "src": "USDA SR Legacy: Ice creams, vanilla"
  },
  {
   "id": "cereal_milk",
@@ -230,7 +230,7 @@ const ADDS = [
   "iron": 2.4,
   "vitc": 0,
   "v": false,
-  "src": "pending: Israeli label, corn flakes; USDA SR Legacy: Milk, whole, 3.25% milkfat"
+  "src": "pending: Israeli label, corn flakes (US records are fortified differently); USDA SR Legacy: Milk, whole, 3.25% milkfat"
  },
  {
   "id": "cheese_toast",
@@ -243,13 +243,13 @@ const ADDS = [
    "חלבון",
    "אנרגיה"
   ],
-  "kcal": 249,
-  "protein": 11.5,
-  "calcium": 211,
-  "iron": 0.8,
+  "kcal": 254,
+  "protein": 11.7,
+  "calcium": 227,
+  "iron": 0.9,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Bread, white / pita; USDA SR Legacy: Cheese, gouda"
+  "v": true,
+  "src": "USDA SR Legacy: Bread, pita, white, unenriched; USDA SR Legacy: Cheese, gouda"
  },
  {
   "id": "egg_hard",
@@ -284,8 +284,8 @@ const ADDS = [
   "calcium": 29,
   "iron": 0.9,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Egg, whole, cooked, fried"
+  "v": true,
+  "src": "USDA SR Legacy: Egg, whole, cooked, fried"
  },
  {
   "id": "egg_in",
@@ -302,8 +302,8 @@ const ADDS = [
   "calcium": 28,
   "iron": 0.9,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Egg, whole, raw, fresh"
+  "v": true,
+  "src": "USDA SR Legacy: Egg, whole, raw, fresh"
  },
  {
   "id": "pancake",
@@ -320,8 +320,8 @@ const ADDS = [
   "calcium": 164,
   "iron": 1.4,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Pancakes, plain, prepared from recipe"
+  "v": true,
+  "src": "USDA SR Legacy: Pancakes, plain, prepared from recipe"
  },
  {
   "id": "schnitzel",
@@ -338,8 +338,8 @@ const ADDS = [
   "calcium": 12,
   "iron": 0.8,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Chicken breast, fried, batter"
+  "v": true,
+  "src": "USDA SR Legacy: Chicken, broilers or fryers, breast, meat and skin, cooked, fried, batter (closest record to a breaded fried schnitzel)"
  },
  {
   "id": "tuna",
@@ -356,8 +356,8 @@ const ADDS = [
   "calcium": 9,
   "iron": 0.9,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Fish, tuna, light, canned in water, drained"
+  "v": true,
+  "src": "USDA SR Legacy: Fish, tuna, light, canned in water, drained solids"
  },
  {
   "id": "salmon",
@@ -373,8 +373,8 @@ const ADDS = [
   "calcium": 12,
   "iron": 0.3,
   "vitc": 3,
-  "v": false,
-  "src": "pending: Fish, salmon, Atlantic, farmed, cooked"
+  "v": true,
+  "src": "USDA SR Legacy: Fish, salmon, Atlantic, farmed, cooked, dry heat"
  },
  {
   "id": "olive_oil",
@@ -407,8 +407,8 @@ const ADDS = [
   "calcium": 5,
   "iron": 0.2,
   "vitc": 4,
-  "v": false,
-  "src": "pending: Avocados, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Avocados, raw, all commercial varieties"
  },
  {
   "id": "olives",
@@ -424,8 +424,8 @@ const ADDS = [
   "calcium": 10,
   "iron": 0.1,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Olives, pickled, green"
+  "v": true,
+  "src": "USDA SR Legacy: Olives, pickled, canned or bottled, green"
  },
  {
   "id": "bread",
@@ -436,13 +436,13 @@ const ADDS = [
   "gives": [
    "אנרגיה"
   ],
-  "kcal": 106,
-  "protein": 3.5,
-  "calcium": 24,
-  "iron": 0.5,
+  "kcal": 110,
+  "protein": 3.6,
+  "calcium": 34,
+  "iron": 0.6,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Bread, white / pita"
+  "v": true,
+  "src": "USDA SR Legacy: Bread, pita, white, unenriched"
  },
  {
   "id": "fries",
@@ -453,13 +453,13 @@ const ADDS = [
   "gives": [
    "אנרגיה"
   ],
-  "kcal": 203,
+  "kcal": 218,
   "protein": 2.4,
-  "calcium": 10,
+  "calcium": 13,
   "iron": 0.6,
-  "vitc": 4,
-  "v": false,
-  "src": "pending: Potatoes, french fried"
+  "vitc": 3,
+  "v": true,
+  "src": "USDA SR Legacy: Fast foods, potato, french fried in vegetable oil"
  },
  {
   "id": "potato",
@@ -475,8 +475,8 @@ const ADDS = [
   "calcium": 8,
   "iron": 0.3,
   "vitc": 7,
-  "v": false,
-  "src": "pending: Potatoes, boiled, without skin"
+  "v": true,
+  "src": "USDA SR Legacy: Potatoes, boiled, cooked without skin, flesh, without salt"
  },
  {
   "id": "rice",
@@ -492,8 +492,8 @@ const ADDS = [
   "calcium": 8,
   "iron": 0.2,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Rice, white, cooked"
+  "v": true,
+  "src": "USDA SR Legacy: Rice, white, long-grain, regular, cooked, unenriched"
  },
  {
   "id": "soup_croutons",
@@ -509,8 +509,8 @@ const ADDS = [
   "calcium": 11,
   "iron": 0.6,
   "vitc": 0,
-  "v": false,
-  "src": "pending: Croutons, plain"
+  "v": true,
+  "src": "USDA SR Legacy: Croutons, plain"
  },
  {
   "id": "veg_sticks",
@@ -522,13 +522,13 @@ const ADDS = [
    "ויטמין C",
    "ירק"
   ],
-  "kcal": 26,
+  "kcal": 24,
   "protein": 1.0,
   "calcium": 13,
   "iron": 0.4,
   "vitc": 58,
-  "v": false,
-  "src": "pending: Cucumber, with peel, raw; pending: Tomatoes, red, ripe, raw; pending: Peppers, sweet, red, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Cucumber, with peel, raw; USDA SR Legacy: Tomatoes, red, ripe, raw, year round average; USDA SR Legacy: Peppers, sweet, red, raw"
  },
  {
   "id": "citrus",
@@ -544,8 +544,8 @@ const ADDS = [
   "calcium": 52,
   "iron": 0.1,
   "vitc": 69,
-  "v": false,
-  "src": "pending: Oranges, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Oranges, raw, all commercial varieties"
  },
  {
   "id": "berries_kiwi",
@@ -561,8 +561,8 @@ const ADDS = [
   "calcium": 12,
   "iron": 0.3,
   "vitc": 44,
-  "v": false,
-  "src": "pending: Strawberries, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Strawberries, raw"
  },
  {
   "id": "banana",
@@ -578,8 +578,8 @@ const ADDS = [
   "calcium": 5,
   "iron": 0.3,
   "vitc": 9,
-  "v": false,
-  "src": "pending: Bananas, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Bananas, raw"
  },
  {
   "id": "oj",
@@ -595,7 +595,7 @@ const ADDS = [
   "calcium": 14,
   "iron": 0.2,
   "vitc": 62,
-  "v": false,
-  "src": "pending: Orange juice, raw"
+  "v": true,
+  "src": "USDA SR Legacy: Orange juice, raw"
  }
 ];

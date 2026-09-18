@@ -186,6 +186,11 @@ textarea.field{resize:vertical}
 .homehero .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
 .homehero .plateSvg{width:118px;flex:none;margin-inline-end:-6px}
 .homehero .ctr{transition:opacity .35s ease}
+.kidlegend{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.kidlegend span{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:500;font-size:16px}
+.kidlegend .dot{width:14px;height:14px;border-radius:50%;flex:none}
+.kidlegend.row{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:6px 16px;flex:none}
+.kidhello{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.15;text-align:center}
 .card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
 .card h2{font-size:20px;margin:0 0 12px}
 .hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,#22935A 0%,#187446 60%,#125C38 100%);box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
@@ -269,6 +274,7 @@ ul.plain{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;g
 <script>
 "use strict";
 /* ---------- נתונים קבועים (כלליים, בלי שום פרט אישי) ---------- */
+const VERSION = "1.5 · 18.9.2026";
 const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.126.0/+esm";
 const MODELS = [
   {id:"claude-opus-5",    name:"Opus 5, הכי חכם",        note:"ברירת מחדל"},
@@ -806,7 +812,50 @@ function remember(){
 const addById=id=>ADDS.find(a=>a.id===id);
 function sumLabel(){ const n=Object.keys(F.picked).length+F.customs.length; return n?`לסיכום עם ${n===1?"תוספת אחת":n+" תוספות"}`:"לסיכום בלי תוספות"; }
 function stepHTML(q){ return q?`<span class="step"><button data-d="-1" aria-label="פחות">−</button><output>${q}</output><button data-d="1" aria-label="עוד">+</button><em>כמה מנות</em></span>`:""; }
+const KID_WORD={"חלבון":"לשרירים","סידן":"לעצמות","ברזל":"לאנרגיה","ויטמין C":"ויטמינים","ירק":"ויטמינים","אנרגיה":"כוח"};
+const kidLegend=cls=>`<div class="kidlegend ${cls||""}"><span class="np"><i class="dot"></i>אדום: לשרירים</span><span class="nc"><i class="dot"></i>כחול: לעצמות</span><span class="ni"><i class="dot"></i>סגול: לאנרגיה</span></div>`;
+function screenAddsKid(first){
+  const b=F.b, list=b.additions.slice(0,F.shown), more=b.additions.length>F.shown;
+  render(`<section class="screen">
+    <div class="live" id="live">${plateHTML(emo(F.a.dish_name))}${kidLegend()}</div>
+    <div><h2>${S.name?esc(S.name)+", מה":"מה"} בא לך להוסיף לצלחת?</h2><p class="lead">כל תוספת מוסיפה צבע לצלחת.</p></div>
+    <div class="opts" id="addList">
+      ${list.map(x=>{const a=addById(x.id), q=F.picked[a.id]||0; const words=[...new Set(a.gives.map(g=>KID_WORD[g]).filter(Boolean))];
+        return `<div class="opt ${q?"sel":""}" data-id="${a.id}" role="checkbox" aria-checked="${q?"true":"false"}" tabindex="0">
+        <span class="em" aria-hidden="true">${ADD_EMO[a.id]||"🍽️"}</span>
+        <span class="t"><span>${esc(a.label)}</span><small>${esc(x.why)}</small><span class="gives">${a.gives.map(g=>KID_WORD[g]?`<i class="${GIVE_CLS[g]||""}">${esc(KID_WORD[g])}</i>`:"").filter((v,i,arr)=>v&&arr.indexOf(v)===i).join("")}</span></span>
+        <span class="check" aria-hidden="true"></span></div>`;}).join("")}
+      <button class="opt ghost" id="more" ${more?"":"disabled"}><span class="em" aria-hidden="true">✨</span><span class="t"><span>${more?"עוד רעיונות":"אלה כל הרעיונות להיום"}</span></span></button>
+    </div>
+    <div class="bottom"><button class="cta" id="kidDone">סיימתי לבחור</button><div class="linkrow"><button class="link" id="toParent">חזרה לתצוגת הורים</button></div></div></section>`);
+  const live=$("#live"); if(first) later2(()=>paintPlate(live)); else paintPlate(live);
+  main.querySelectorAll("#addList .opt[data-id]").forEach(el=>{
+    const id=el.dataset.id;
+    const toggle=()=>{ if(F.picked[id]) delete F.picked[id]; else F.picked[id]=1; const q=F.picked[id]||0;
+      el.classList.toggle("sel",!!q); el.setAttribute("aria-checked",q?"true":"false"); paintPlate(live); };
+    el.onclick=toggle; el.onkeydown=e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); toggle(); } };
+  });
+  $("#more").onclick=()=>{ if(more){ F.shown+=4; keep(screenAdds); } };
+  $("#kidDone").onclick=screenKidSum;
+  $("#toParent").onclick=()=>{ F.kid=false; screenAdds(true); };
+}
+function screenKidSum(){
+  const names=[...Object.keys(F.picked).map(id=>(ADD_EMO[id]||"")+" "+addById(id).label), ...F.customs.map(c=>"✏️ "+c.label)];
+  render(`<section class="screen">
+    <div class="sumhero" id="sumPlate">
+      ${plateHTML(emo(F.a.dish_name))}
+      <div class="kidhello">${names.length?"איזו צלחת צבעונית!":"הצלחת מוכנה!"}</div>
+      ${names.length?`<div class="small">הוספת: ${esc(names.join(", "))}</div>`:""}
+      ${kidLegend("row")}</div>
+    <p class="kidhello" style="font-size:24px">בתיאבון${S.name?", "+esc(S.name):""} 😋</p>
+    <div class="bottom flat"><button class="cta" id="kidNew">מנה חדשה</button>
+      <div class="linkrow"><button class="link" id="kidEdit">לשנות את הבחירה</button><button class="link" id="kidParent">להורים: הסיכום המלא</button></div></div></section>`);
+  later2(()=>paintPlate($("#sumPlate")));
+  $("#kidNew").onclick=home; $("#kidEdit").onclick=()=>screenAdds(true);
+  $("#kidParent").onclick=()=>{ F.kid=false; screenSum(); };
+}
 function screenAdds(first){
+  if(F.kid) return screenAddsKid(first);
   const b=F.b, list=b.additions.slice(0,F.shown), more=b.additions.length>F.shown;
   render(`<section class="screen">${crumbs()}
     <div class="live" id="live">${plateHTML(emo(F.a.dish_name))}${nrowsHTML(false)}</div>
@@ -824,6 +873,7 @@ function screenAdds(first){
       <button class="opt ghost" id="more" ${more?"":"disabled"}><span class="em" aria-hidden="true">✨</span><span class="t"><span>תציע לי אפשרויות נוספות</span>${more?"":`<small>אלה כל התוספות שמתאימות מהרשימה שלכם</small>`}</span></button>
     </div>
     ${otherBox("למשל: כף שמנת חמוצה","תוספת אחרת")}
+    <div class="linkrow"><button class="link" id="toKid">👧 ${S.name?esc(S.name):"הילדה"} בוחרת בעצמה, בלי מספרים</button></div>
     ${b.tip?`<div class="tip"><span class="em" aria-hidden="true">💡</span><span><b>טיפ למנה</b>${esc(b.tip)}</span></div>`:""}
     <div class="bottom"><button class="cta" id="sum">${sumLabel()}</button></div></section>`);
   const live=$("#live"); if(first) later2(()=>paintPlate(live)); else paintPlate(live);
@@ -839,6 +889,7 @@ function screenAdds(first){
   $("#more").onclick=()=>{ if(more){ F.shown+=4; keep(screenAdds); } };
   const ra=$("#reAsk"); if(ra) ra.onclick=()=>{ F.memo=null; F.fromMemo=false; F.picked={}; F.customs=[]; F.shown=4; advise(); };
   wireOther(addCustom);
+  $("#toKid").onclick=()=>{ F.kid=true; screenAdds(true); };
   $("#otherOk").textContent="הוסף";
   $("#sum").onclick=screenSum; bindCrumbs();
 }
@@ -893,7 +944,7 @@ function screenSum(){
         <tr><th>ברזל, מ"ג</th><td>${n1(base.iron_mg)}</td><td>${n1(add.iron_mg)}</td><td>${n1(tot.fe)}</td><td>${t.iron}</td></tr>
         <tr><th>ויטמין C, מ"ג</th><td>${fmt(base.vitc_mg)}</td><td>${fmt(add.vitc_mg)}</td><td>${fmt((base.vitc_mg||0)+add.vitc_mg)}</td><td>45</td></tr>
       </tbody></table></div>
-      <p class="tiny" style="margin:8px 0 0">ערכי המנה הם הערכה של קלוד לפי טבלאות הרכב מזון. ערכי התוספות קבועים (USDA)${lines.some(l=>l.est)?", חוץ מאלה שמסומנות הערכה":""}. היעדים: ההמלצות היומיות לגיל ${t.label} (DRI).</p></details></div>
+      <p class="tiny" style="margin:8px 0 0">ערכי המנה הם הערכה של קלוד לפי טבלאות הרכב מזון. ערכי התוספות קבועים ומאומתים (USDA ותוויות יצרן)${lines.some(l=>l.est)?", חוץ מאלה שמסומנות הערכה":""}. היעדים: ההמלצות היומיות לגיל ${t.label} (DRI).</p></details></div>
     ${later.length?`<div class="card"><h2>מה כדאי להשלים בהמשך היום</h2><ul class="plain">${later.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
     <p class="note">המידע כללי ואינו תחליף לרופא או לדיאטנית ילדים.${F.demo?" זו מנת הדגמה.":""}</p>
     <div class="bottom flat"><button class="cta" id="new">מנה חדשה</button><div class="linkrow"><button class="link" id="edit">שינוי התוספות</button></div></div></section>`);
@@ -928,7 +979,7 @@ function sheetTips(){
 function sheetHow(){ openSheet("איך זה עובד",`<div class="card"><ul class="plain">
   <li>כותבים מנה. קלוד שואל עד 2 שאלות, ומעריך את הערכים שלה. זו <b>הערכה</b>, כי אף אחד לא שקל את הצלחת.</li>
   <li>התוספות מגיעות רק מרשימה סגורה שאישרתם בהגדרות. קלוד בוחר מתוכה ולא ממציא.</li>
-  <li>הערכים של כל תוספת קבועים באפליקציה, ממאגר משרד החקלאות האמריקאי (USDA). תוספת שעוד לא אומתה מסומנת "הערכה".</li>
+  <li>הערכים של כל תוספת קבועים באפליקציה ואומתו מול מאגר משרד החקלאות האמריקאי (USDA). הגבינה הבולגרית לפי תווית היצרן. תוספת שעוד לא אומתה מסומנת "הערכה".</li>
   <li>היעדים היומיים הם ההמלצות הרשמיות לגיל (DRI). אף תוספת לא "מגביהה": המטרה היא שלא יחסר לגוף מה שהוא צריך כדי לגדול.</li>
   <li>שום דבר לא נשמר בשרת. השם, ההעדפות והמפתח נשמרים רק בטלפון הזה.</li></ul></div>
   <h4>מקורות</h4><div class="src">${SOURCES.map(esc).join("<br>")}</div>`); }
@@ -955,6 +1006,7 @@ function sheetSettings(focus,msg){
   ${Object.entries(groups).map(([g,name])=>{const l=ADDS.filter(a=>a.g===g); return l.length?`<p class="small" style="margin:8px 0 0"><b>${name}</b></p>`+l.map(a=>`<div class="rowf"><span>${esc(a.label)} <span class="tiny">${esc(a.amount)}</span></span><input class="switch" type="checkbox" data-add="${a.id}" ${S.off.includes(a.id)?"":"checked"} aria-label="${esc(a.label)}"></div>`).join(""):"";}).join("")}
   ${S.apiKey?secKey:""}
   <button class="cta" id="sSave">שמירה</button>
+  <p class="tiny" style="text-align:center;margin:0">גרסה ${VERSION}</p>
   <div class="linkrow"><button class="link" id="sWipe">מחיקת המפתח מהטלפון הזה</button>${S.memo&&Object.keys(S.memo).length?`<button class="link" id="sForget">שכח מנות שמורות (${Object.keys(S.memo).length})</button>`:""}</div>`;
   openSheet("הגדרות",body,close=>{
     const read=()=>{ S.name=$("#sName").value.trim(); S.birth=$("#sBirth").value; S.favs=$("#sFavs").value.split(/[,\n]/).map(x=>x.trim()).filter(Boolean);
