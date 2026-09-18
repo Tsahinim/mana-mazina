@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מנה מזינה</title>
+<meta name="description" content="כותבים מנה, מקבלים תוספות קטנות שהופכות אותה למזינה יותר.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1712" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="מנה מזינה">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg1:#FBF6EC; --bg2:#EAF5EC; --card:#FFFFFF; --glass:rgba(255,255,255,.78);
+  --ink:#14231A; --ink-2:#435347; --muted:#728078; --line:#E1E8E0;
+  --herb:#22935A; --herb-2:#187446; --herb-ink:#FFFFFF; --herb-soft:#DFF3E6; --herb-deep:#146339;
+  --tomato:#E0533A; --tomato-soft:#FDE6E0; --tomato-deep:#A9341F;
+  --yolk:#F5B829; --yolk-soft:#FFF2CF; --yolk-ink:#6A4A00;
+  --np:#F0714F; --np-soft:#FDE3DB; --np-ink:#B03C1C;
+  --nc:#3D9BE0; --nc-soft:#DCEEFB; --nc-ink:#1B669F;
+  --ni:#8B5CF6; --ni-soft:#EAE2FE; --ni-ink:#5A33C2;
+  --t1:#DFF3E6; --t2:#FFE7DA; --t3:#FFF2CF; --t4:#E0EEFB; --t5:#EFE6FA; --t6:#FCE3EC;
+  --blob1:rgba(224,83,58,.16); --blob2:rgba(34,147,90,.18); --blob3:rgba(245,184,41,.20);
+  --shadow:0 1px 2px rgba(20,35,26,.05), 0 8px 24px rgba(20,35,26,.07);
+  --shadow-lg:0 2px 6px rgba(20,35,26,.06), 0 18px 40px rgba(20,35,26,.12);
+  --r:22px; --r-sm:16px;
+  --display:"Fredoka","Rubik",system-ui,sans-serif;
+  --body:"Rubik",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg1:#0F1712; --bg2:#0F1B15; --card:#18231C; --glass:rgba(24,35,28,.78);
+    --ink:#ECF4EE; --ink-2:#B9C8BE; --muted:#8B9B90; --line:#293830;
+    --herb:#4FC487; --herb-2:#3AA76E; --herb-ink:#07150D; --herb-soft:#1B3325; --herb-deep:#8EDDB0;
+    --tomato:#FF8A70; --tomato-soft:#3B211B; --tomato-deep:#FFB3A1;
+    --yolk:#F7C548; --yolk-soft:#372D12; --yolk-ink:#FBE3A0;
+    --np:#FF8E6E; --np-soft:#3B221B; --np-ink:#FFBBA6;
+    --nc:#62B4F2; --nc-soft:#16293A; --nc-ink:#A6D5FA;
+    --ni:#A78BFA; --ni-soft:#261F3D; --ni-ink:#CDBDFD;
+    --t1:#1B3325; --t2:#3A261D; --t3:#372D12; --t4:#1A2B3B; --t5:#2A2238; --t6:#3A1F2A;
+    --blob1:rgba(255,138,112,.10); --blob2:rgba(79,196,135,.12); --blob3:rgba(247,197,72,.08);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    --shadow-lg:0 2px 6px rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html{height:100%;overflow-x:hidden}
+body{margin:0;min-height:100%;color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%) fixed;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(38vmax 30vmax at 92% -6%,var(--blob1),transparent 62%),
+             radial-gradient(34vmax 28vmax at -8% 12%,var(--blob2),transparent 60%),
+             radial-gradient(30vmax 26vmax at 50% 108%,var(--blob3),transparent 60%)}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--herb);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 4px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:21px;color:var(--herb-deep)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--herb),var(--herb-2));display:grid;place-items:center;box-shadow:var(--shadow);font-size:20px}
+.iconbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;place-items:center;box-shadow:var(--shadow)}
+.iconbtn svg{width:22px;height:22px;stroke:var(--ink-2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+main{flex:1;display:flex;flex-direction:column;padding:4px 20px 0}
+.screen{flex:1;display:flex;flex-direction:column;gap:16px;animation:in .28s ease both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1{font-family:var(--display);font-weight:600;font-size:33px;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.2px}
+h2{font-family:var(--display);font-weight:600;font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+h3.sec{font-family:var(--display);font-weight:500;font-size:16px;color:var(--ink-2);margin:4px 0 -6px}
+.hello{font-family:var(--display);font-weight:500;color:var(--herb-deep);font-size:17px;margin:8px 0 -10px}
+.lead{color:var(--ink-2);margin:0}
+.small{font-size:15px;color:var(--ink-2)}
+.tiny{font-size:14px;color:var(--muted)}
+.bento{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{border:0;border-radius:22px;padding:12px 8px 11px;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:14.5px;font-weight:500;line-height:1.25;color:var(--ink);box-shadow:var(--shadow);transition:transform .12s ease}
+.tile:active{transform:scale(.96)}
+.mini{width:56px;height:56px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:29px;line-height:1;flex:none;
+  box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 6.5px var(--line),0 4px 10px rgba(20,35,26,.10)}
+.tile:nth-child(6n+1){background:var(--t1)} .tile:nth-child(6n+2){background:var(--t2)} .tile:nth-child(6n+3){background:var(--t3)}
+.tile:nth-child(6n+4){background:var(--t4)} .tile:nth-child(6n+5){background:var(--t5)} .tile:nth-child(6n+6){background:var(--t6)}
+.tip{display:flex;gap:12px;align-items:flex-start;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);font-size:16px;color:var(--ink-2)}
+.tip .em{font-size:26px;line-height:1.1;flex:none}
+.tip b{display:block;font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink);margin-bottom:1px}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.crumb{border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--ink-2);min-height:36px}
+.crumb b{font-weight:600;color:var(--ink)}
+.prog{height:6px;border-radius:9px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--herb),var(--yolk));transition:width .3s ease}
+.qhead{display:flex;gap:14px;align-items:center}
+.badge{width:66px;height:66px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:33px;flex:none;
+  box-shadow:inset 0 0 0 6px var(--card),inset 0 0 0 7.5px var(--line),0 6px 14px rgba(20,35,26,.12)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{width:100%;text-align:right;border:2px solid transparent;background:var(--card);border-radius:var(--r);padding:14px 16px;min-height:62px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:transform .12s ease,border-color .15s ease,background .15s ease}
+.opt:active{transform:scale(.985)}
+.opt .em{font-size:26px;line-height:1;flex:none;width:34px;text-align:center}
+.opt .t{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+.opt .t>span{font-weight:500}
+.opt .t small{font-size:14px;color:var(--ink-2);font-weight:400}
+.opt.def{border-color:var(--herb)}
+.pill{font-size:12px;font-weight:600;color:var(--herb-deep);background:var(--herb-soft);padding:3px 9px;border-radius:999px;white-space:nowrap;flex:none}
+.opt.sel{border-color:var(--herb);background:var(--herb-soft)}
+.opt.ghost{background:transparent;border:2px dashed var(--line);box-shadow:none;color:var(--ink-2)}
+.opt.ghost:disabled{opacity:.6}
+.gives{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.gives i{font-style:normal;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--yolk-soft);color:var(--yolk-ink)}
+.gives i.np{background:var(--np-soft);color:var(--np-ink)} .gives i.nc{background:var(--nc-soft);color:var(--nc-ink)} .gives i.ni{background:var(--ni-soft);color:var(--ni-ink)} .gives i.ng{background:var(--herb-soft);color:var(--herb-deep)}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;background:var(--card)}
+.opt.sel .check{background:var(--herb);border-color:var(--herb)}
+.opt.sel .check::after{content:"";width:7px;height:12px;border:solid var(--herb-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.plate{flex:none;width:44px;height:44px;display:grid;place-items:center}
+.plate i{display:block;border-radius:50%;background:var(--herb-soft);border:3px solid var(--herb)}
+.step{display:flex;align-items:center;gap:6px;margin-top:8px}
+.step em{font-style:normal;font-size:13px;color:var(--ink-2);margin-inline-start:4px}
+.step button{width:40px;height:40px;border-radius:50%;border:0;background:var(--card);font-size:22px;line-height:1;color:var(--herb-deep);box-shadow:var(--shadow)}
+.step output{min-width:22px;text-align:center;font-weight:600}
+.tag{display:inline-block;border-radius:999px;padding:4px 11px;font-size:13px;font-weight:600;margin:0 0 4px 2px}
+.tag.has{background:var(--herb-soft);color:var(--herb-deep)}
+.tag.miss{background:var(--tomato-soft);color:var(--tomato-deep)}
+.tag.est{background:var(--yolk-soft);color:var(--yolk-ink);padding:2px 9px;font-size:12px;margin:0}
+.other{display:flex;gap:8px}
+.field{flex:1;border:2px solid var(--line);background:var(--card);border-radius:var(--r-sm);padding:13px 14px;min-height:54px;width:100%}
+.field:focus{border-color:var(--herb);outline:none}
+textarea.field{resize:vertical}
+.cta{width:100%;border:0;border-radius:999px;background:linear-gradient(135deg,var(--herb),var(--herb-2));color:var(--herb-ink);font-family:var(--display);font-weight:600;font-size:19px;padding:16px;min-height:60px;box-shadow:var(--shadow-lg);transition:transform .12s ease}
+.cta:active{transform:scale(.98)}
+.cta.sec{background:var(--card);color:var(--herb-deep);box-shadow:var(--shadow);border:2px solid var(--herb-soft)}
+.cta.mini{width:auto;min-height:54px;padding:0 22px;font-size:17px;border-radius:var(--r-sm)}
+.cta:disabled{opacity:.55}
+.bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;padding:14px 0 calc(16px + env(safe-area-inset-bottom,0px));z-index:5}
+.bottom.flat{position:static;padding-top:4px}
+.bottom.flat::before{display:none}
+.bottom::before{content:"";position:absolute;inset:-18px -20px 0;z-index:-1;background:linear-gradient(to top,var(--bg2) 62%,transparent)}
+.ask{display:flex;gap:8px;align-items:center;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:2px solid var(--card);border-radius:999px;padding:6px 6px 6px 8px;box-shadow:var(--shadow-lg);transition:border-color .15s ease}
+.ask:focus-within{border-color:var(--herb)}
+.ask input{flex:1;border:0;background:transparent;padding:10px 14px;min-height:48px;outline:none;min-width:0}
+.ask input::placeholder{color:var(--muted)}
+.go{width:50px;height:50px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--herb),var(--herb-2));display:grid;place-items:center;flex:none;transition:transform .12s ease}
+.go:active{transform:scale(.92)}
+.go svg{width:22px;height:22px;stroke:var(--herb-ink);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.plateSvg{display:block;max-width:100%;height:auto;overflow:visible}
+.plateSvg circle{fill:none}
+.plateSvg .trk,.plateSvg .bas,.plateSvg .add{stroke-width:13;stroke-linecap:round}
+.plateSvg .bas,.plateSvg .add{transition:stroke-dasharray .7s cubic-bezier(.2,.8,.2,1)}
+.np .trk{stroke:var(--np-soft)} .np .bas{stroke:var(--np)} .np .add{stroke:var(--np);opacity:.42}
+.nc .trk{stroke:var(--nc-soft)} .nc .bas{stroke:var(--nc)} .nc .add{stroke:var(--nc);opacity:.42}
+.ni .trk{stroke:var(--ni-soft)} .ni .bas{stroke:var(--ni)} .ni .add{stroke:var(--ni);opacity:.42}
+.plateSvg .dish{fill:var(--card);filter:drop-shadow(0 8px 16px rgba(20,35,26,.16))}
+.plateSvg .rim{stroke:var(--line);stroke-width:2}
+.plateSvg .ctr{font-size:48px}
+.plateSvg .garnish text{font-size:22px;transform-box:fill-box;transform-origin:center;animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+.spin .arcs{animation:rot 1.6s linear infinite;transform-origin:100px 100px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.live{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:6;display:flex;gap:12px;align-items:center;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:28px;padding:10px 14px 10px 16px;box-shadow:var(--shadow-lg)}
+.live .plateSvg{width:112px;flex:none}
+.nrows{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.nrow{display:flex;align-items:center;gap:7px;font-size:14.5px;line-height:1.2}
+.nrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.np .dot{background:var(--np)} .nc .dot{background:var(--nc)} .ni .dot{background:var(--ni)}
+.nrow b{font-family:var(--display);font-weight:600;font-size:15.5px}
+.nrow .val{color:var(--ink-2);margin-inline-start:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nrow .plus{font-size:12.5px;font-weight:600;border-radius:999px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.np .plus{background:var(--np-soft);color:var(--np-ink)} .nc .plus{background:var(--nc-soft);color:var(--nc-ink)} .ni .plus{background:var(--ni-soft);color:var(--ni-ink)}
+.nrows.big{gap:10px}
+.nrows.big .nrow{font-size:16px;background:var(--card);border-radius:18px;padding:11px 14px;box-shadow:var(--shadow);flex-wrap:wrap;row-gap:2px}
+.nrows.big .val{order:9;flex-basis:100%;margin:0;padding-inline-start:18px;font-size:14.5px;text-align:right}
+.nrows.big .pct{margin-inline-start:auto}
+.nrows.big .nrow b{font-size:17px}
+.nrows.big .pct{font-family:var(--display);font-weight:600;font-size:18px;min-width:50px;text-align:left}
+.np .pct{color:var(--np-ink)} .nc .pct{color:var(--nc-ink)} .ni .pct{color:var(--ni-ink)}
+.sumhero{border-radius:30px;padding:18px 16px 16px;background:linear-gradient(160deg,var(--herb-soft) 0%,var(--yolk-soft) 100%);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.sumhero .name{font-size:15px;color:var(--ink-2)}
+.sumhero .plateSvg{width:min(236px,68vw)}
+.sumhero .kcal{font-family:var(--display);font-weight:600;font-size:38px;line-height:1}
+.sumhero .kcal small{font-size:15px;font-weight:500;color:var(--ink-2)}
+.sumhero .nrows{align-self:stretch;text-align:right}
+.homehero{display:flex;gap:10px;align-items:center}
+.homehero .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.homehero .plateSvg{width:118px;flex:none;margin-inline-end:-6px}
+.homehero .ctr{transition:opacity .35s ease}
+.card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.card h2{font-size:20px;margin:0 0 12px}
+.hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,#22935A 0%,#187446 60%,#125C38 100%);box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.10);left:-50px;top:-60px}
+.hero .em{font-size:40px;line-height:1;position:relative;z-index:1}
+.hero .name{font-size:15px;opacity:.92;margin-top:8px;position:relative;z-index:1}
+.hero .kcal{font-family:var(--display);font-weight:600;font-size:36px;line-height:1.1;position:relative;z-index:1}
+.hero .kcal small{font-size:15px;font-weight:500;opacity:.9}
+.rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.ring{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ring svg{width:100%;max-width:104px;height:auto;transform:rotate(-90deg)}
+.ring .bg{stroke:var(--line)} .ring .b1{stroke:var(--herb)} .ring .b2{stroke:var(--yolk)}
+.ring circle{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dasharray .7s ease}
+.ring .pct{font-family:var(--display);font-weight:600;font-size:22px;margin-top:-70px;height:66px;display:grid;place-items:center}
+.ring b{font-family:var(--display);font-weight:600;font-size:16px}
+.ring small{font-size:13px;color:var(--ink-2);line-height:1.3}
+.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--ink-2);margin-top:12px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:5px;vertical-align:-1px}
+.legend .l1::before{background:var(--herb)} .legend .l2::before{background:var(--yolk)}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.list li{display:flex;gap:12px;align-items:center;font-size:16px}
+.list .em{width:42px;height:42px;border-radius:14px;background:var(--yolk-soft);display:grid;place-items:center;font-size:22px;flex:none}
+.mean{display:flex;flex-direction:column;gap:12px}
+.mean .row{display:flex;gap:12px;align-items:flex-start;font-size:16px;color:var(--ink-2)}
+.mean .row .em{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:20px;flex:none;background:var(--herb-soft)}
+.mean .row b{color:var(--ink)}
+.mean .sumline{font-size:17px;color:var(--ink);margin:0}
+.note{font-size:14px;color:var(--muted);margin:0}
+.banner{background:var(--yolk-soft);color:var(--yolk-ink);border-radius:var(--r-sm);padding:10px 14px;font-size:15px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.banner button{border:0;background:transparent;color:inherit;font-weight:600;text-decoration:underline;min-height:40px;padding:0 4px;white-space:nowrap}
+.err{background:var(--tomato-soft);color:var(--tomato-deep);border-radius:var(--r);padding:16px;font-size:17px}
+.err details{margin-top:8px;font-size:13px;direction:ltr;text-align:left;color:var(--ink-2)}
+.load{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;min-height:56vh}
+.bounce{display:flex;gap:12px;font-size:40px}
+.bounce span{display:inline-block;animation:hop .9s ease-in-out infinite}
+.bounce span:nth-child(2){animation-delay:.15s} .bounce span:nth-child(3){animation-delay:.3s}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-16px)}}
+@media (prefers-reduced-motion: reduce){.screen,.bounce span,.plateSvg .garnish text{animation:none}.spin .arcs{animation-duration:6s}.plateSvg .bas,.plateSvg .add,.prog i{transition:none}}
+.sheet{position:fixed;inset:0;background:rgba(10,18,13,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:20;animation:fade .2s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet .panel{background:linear-gradient(180deg,var(--bg1),var(--bg2));width:100%;max-width:520px;max-height:92dvh;overflow:auto;border-radius:28px 28px 0 0;padding:10px 20px calc(26px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:up .28s ease both}
+@keyframes up{from{transform:translateY(40px)}to{transform:none}}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto}
+.sheet header{display:flex;justify-content:space-between;align-items:center}
+.sheet h3{font-family:var(--display);font-weight:600;font-size:24px;margin:0}
+.sheet h4{font-family:var(--display);font-weight:600;font-size:18px;margin:10px 0 0;color:var(--herb-deep)}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:15px;color:var(--ink-2)}
+.rowf{display:flex;gap:10px;align-items:center;justify-content:space-between;min-height:50px;background:var(--card);border-radius:var(--r-sm);padding:6px 14px;box-shadow:var(--shadow)}
+.switch{appearance:none;-webkit-appearance:none;width:52px;height:30px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s;margin:0}
+.switch::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch:checked{background:var(--herb)}
+.switch:checked::after{transform:translateX(-22px)}
+.linkrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.link{border:0;background:transparent;color:var(--herb-deep);font-weight:500;font-size:15px;min-height:44px;padding:0 12px;border-radius:999px}
+.link:active{background:var(--herb-soft)}
+ul.plain{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px}
+.src{font-size:13px;color:var(--muted);direction:ltr;text-align:left;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><span class="logo" aria-hidden="true">🍽️</span>מנה מזינה</div>
+    <div style="display:flex;gap:8px">
+    <button class="iconbtn" id="btnTips" aria-label="טיפים לגדילה"><span aria-hidden="true" style="font-size:21px;line-height:1">💡</span></button>
+    <button class="iconbtn" id="btnSettings" aria-label="הגדרות">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    </button>
+    </div>
+  </div>
+  <main id="main" aria-live="polite"></main>
+</div>
+<div id="sheetRoot"></div>
+
+<script src="adds.js"></script>
+<script>
+"use strict";
+/* ---------- נתונים קבועים (כלליים, בלי שום פרט אישי) ---------- */
+const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.126.0/+esm";
+const MODELS = [
+  {id:"claude-opus-5",    name:"Opus 5, הכי חכם",        note:"ברירת מחדל"},
+  {id:"claude-sonnet-5",  name:"Sonnet 5, מאוזן",         note:"זול פי 2.5 בערך"},
+  {id:"claude-haiku-4-5", name:"Haiku 4.5, הכי מהיר וזול", note:"זול פי 5 בערך"}
+];
+const TARGETS = {                       // DRI, National Academies (בנות)
+  young:{label:"9 עד 13", protein:34, calcium:1300, iron:8},
+  teen :{label:"14 עד 18", protein:46, calcium:1300, iron:15}
+};
+const DEFAULT_FAVS = ["פסטה רוזה","פסטה רוזה עם בולגרית","שקשוקה","שניצל","טוסט פיתה","סלמון","קציצות עוף","המבורגר ביתי","סלט ירקות","ארוחה במקדונלד'ס"];
+// הרחבה שנשלחת לקלוד כשבוחרים מנה קבועה, כדי שלא יהיה ספק במה מדובר
+const FAV_HINT = {
+  "פסטה רוזה":"פסטה ברוטב עגבניות ושמנת (רוזה), בלי גבינה מעל",
+  "פסטה רוזה עם בולגרית":"פסטה ברוטב עגבניות ושמנת (רוזה), עם גבינה בולגרית מפוררת מעל",
+  "המבורגר ביתי":"המבורגר ביתי: לחמנייה עם קציצה מבשר בקר טחון איכותי, שהוכנה בבית",
+  "ארוחה במקדונלד'ס":"ארוחה במקדונלד'ס, בסניף כשר (בשרי): ההמבורגר של הרשת וצ'יפס של הרשת",
+  "טוסט פיתה":"טוסט פיתה: פיתה עם רוטב עגבניות, זיתים וגבינה צהובה, בטוסטר",
+  "סלט ירקות":"סלט ירקות בלי בצל: עגבנייה, מלפפון ופלפל",
+  "סלמון":"סלמון בתנור או במחבת, עם לימון או ברוטב סויה"
+};
+const DEFAULT_DISLIKES = "טחינה, חומוס, שעועית, בצל בסלט";
+const EMO = [[/מקדונלד|המבורגר|בורגר/,"🍔"],[/פסטה|ספגטי|רביולי|נודלס|פתיתים/,"🍝"],[/שקשוקה|חביתה|ביצ/,"🍳"],[/שניצל|עוף|כנפ/,"🍗"],
+  [/קציצ/,"🧆"],[/צ'?יפס/,"🍟"],[/פיצה/,"🍕"],[/טוסט|כריך|סנדוויץ|פיתה|לחם/,"🥪"],[/סלמון|דג|טונה/,"🐟"],[/סלט|ירק/,"🥗"],
+  [/אורז/,"🍚"],[/מרק/,"🍲"],[/פנקייק|פרנץ/,"🥞"],[/דגני|קורנפלקס/,"🥣"],[/יוגורט|מעדן|גלידה/,"🍦"],[/פרי|תפוח|בננה/,"🍎"]];
+const emo = s=>{ for(const [r,e] of EMO) if(r.test(s)) return e; return "🍽️"; };
+const ADD_EMO = {yellow_grated:"🧀",yellow_slice:"🧀",bulgarian:"🧀",mozzarella:"🧀",cream_cheese:"🧀",cottage:"🥣",cooking_cream:"🥛",butter:"🧈",
+  shoko:"🥛",yogurt_fruit:"🍓",pudding:"🍮",ice_cream:"🍨",cereal_milk:"🥣",cheese_toast:"🥪",egg_hard:"🥚",egg_fried:"🍳",egg_in:"🥚",pancake:"🥞",
+  schnitzel:"🍗",tuna:"🐟",salmon:"🐟",olive_oil:"🫒",avocado:"🥑",olives:"🫒",bread:"🥙",fries:"🍟",potato:"🥔",rice:"🍚",soup_croutons:"🥣",
+  veg_sticks:"🥒",citrus:"🍊",berries_kiwi:"🥝",banana:"🍌",oj:"🧃"};
+const TIP_GROUPS = [
+  {em:"🦴", title:"העצם נבנית עכשיו", items:[
+    ["סידן בכל יום","בגיל הזה נבנית רוב מסת העצם לכל החיים, ולכן סידן הוא הרכיב שהכי שווה להשלים: גבינה, יוגורט, שוקו."],
+    ["למה קפיצות","עצם מתחזקת כשמפעילים עליה עומס. חבל, כדורסל, ריקוד והתעמלות נותנים בדיוק את העומס הזה. אחרי סידן, זה הדבר הכי מוכח לבניית עצם."]]},
+  {em:"🍽️", title:"האוכל לאורך היום", items:[
+    ["יותר הזדמנויות, לא צלחות גדולות","3 ארוחות ועוד 2 עד 3 ארוחות ביניים. מי שמתמלאת מהר צריכה לאכול יותר פעמים, לא יותר בכל פעם."],
+    ["שתייה עשירה רק עם אוכל","שוקו, חלב ומיץ הם חלק מהארוחה. בין הארוחות הם סוגרים את התיאבון, ולכן רק מים."],
+    ["ויטמין C ליד ברזל","עגבנייה, פלפל, תפוז או קלמנטינה באותה ארוחה משפרים את ספיגת הברזל מהצומח."],
+    ["מלח עם יוד","יוד נחוץ לבלוטת התריס, שמנהלת את הגדילה, ולילדים בישראל הוא חסר. בבית כדאי מלח מועשר ביוד, בלי להוסיף מלח."]]},
+  {em:"🤝", title:"אווירה סביב האוכל", items:[
+    ["מי מחליט מה","ההורה מחליט מה, מתי ואיפה אוכלים. הילדה מחליטה כמה. בלי 'עוד ביס אחד': לחץ מקטין את התיאבון, לא מגדיל אותו."]]},
+  {em:"😴", title:"שינה", items:[
+    ["שינה היא חלק מהגדילה","עד גיל 12 מומלצות 9 עד 12 שעות שינה בלילה, ומגיל 13, 8 עד 10 שעות."]]},
+  {em:"📏", title:"מעקב רגוע", items:[
+    ["מודדים בנחת","גובה פעם ב-3 חודשים, משקל לכל היותר פעם בחודש. מדידות תכופות רק מלחיצות ולא מוסיפות מידע."],
+    ["אין תוסף שמגביה","אוכל מגוון, שינה ותנועה עושים את העבודה. תוספי תזונה רק בהנחיית רופא."]]}
+];
+const DOCTOR = [
+  "ירידה במשקל, או קושי עקבי לעלות במשקל",
+  "האטה ברורה בגדילה, עצירה, או ירידה באחוזוני הגובה או המשקל",
+  "עייפות משמעותית, חולשה או שינוי בתפקוד היומיומי",
+  "כאבי בטן חוזרים, שלשול ממושך, הקאות, עצירות קשה או ירידה בתיאבון",
+  "הימנעות רחבה ממזונות, חרדה סביב אוכל, או מצוקה סביב משקל ומראה הגוף",
+  "צמא חריג, השתנה תכופה, או כל תסמין אחר שמדאיג אתכם"
+];
+const SOURCES = [
+  "Dietary Reference Intakes, National Academies (protein, calcium, iron targets)",
+  "USDA FoodData Central, SR Legacy (addition values)",
+  "Weaver et al. 2016, National Osteoporosis Foundation position statement on peak bone mass",
+  "AAP & NASPGHAN 2026, Clinical Practice Guideline: Faltering Weight",
+  "NICE NG75, Faltering growth: recognition and management",
+  "Ellyn Satter Institute, Division of Responsibility in Feeding",
+  "Israel National Biomonitoring Program 2022, iodine status in children",
+  "AASM 2016 consensus, recommended sleep for pediatric populations",
+  "Cochrane 2023, zinc supplementation and growth; de Beer 2012, dairy and stature"
+];
+
+/* ---------- אחסון מקומי ---------- */
+const LS = "mana.v1";
+const S = Object.assign({
+  name:"", birth:"", kosher:true, waitHours:1, favs:DEFAULT_FAVS.slice(), dislikes:DEFAULT_DISLIKES,
+  off:[], model:"claude-opus-5", apiKey:""
+}, load());
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)||"{}"); }catch(e){ return {}; } }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+
+/* ---------- עזרים ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const main = $("#main");
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const n0 = x=>Math.round(x||0);
+const n1 = x=>{const v=Math.round((x||0)*10)/10; return Number.isInteger(v)?String(v):v.toFixed(1);};
+const fmt = x=>n0(x).toLocaleString("he-IL");
+function ageBand(){
+  if(!S.birth) return "young";
+  const b=new Date(S.birth), t=new Date(); let a=t.getFullYear()-b.getFullYear();
+  if(t<new Date(t.getFullYear(),b.getMonth(),b.getDate())) a--;
+  return a>=14?"teen":"young";
+}
+const T = ()=>TARGETS[ageBand()];
+const who = ()=>S.name?S.name:"הילדה";
+const activeAdds = ()=>ADDS.filter(a=>!S.off.includes(a.id));
+function hello(){ const h=new Date().getHours(); return h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב"; }
+
+/* ---------- הצלחת החיה ---------- */
+const NUTS=[{k:"p",name:"חלבון",unit:"גרם",dec:true,cls:"np",t:"protein"},{k:"ca",name:"סידן",unit:'מ"ג',dec:false,cls:"nc",t:"calcium"},{k:"fe",name:"ברזל",unit:'מ"ג',dec:true,cls:"ni",t:"iron"}];
+const GIVE_CLS={"חלבון":"np","סידן":"nc","ברזל":"ni","ויטמין C":"ng","ירק":"ng"};
+const PR=84, PC=2*Math.PI*PR, SEG=PC*0.3;
+function plateHTML(center){
+  const secs=NUTS.map((n,i)=>`<g transform="rotate(${-90+i*120+6} 100 100)" class="${n.cls}">
+    <circle class="trk" cx="100" cy="100" r="${PR}" stroke-dasharray="${SEG.toFixed(1)} ${PC.toFixed(1)}"/>
+    <circle class="add" data-k="${n.k}a" cx="100" cy="100" r="${PR}" stroke-dasharray="0 ${PC.toFixed(1)}" style="visibility:hidden"/>
+    <circle class="bas" data-k="${n.k}b" cx="100" cy="100" r="${PR}" stroke-dasharray="0 ${PC.toFixed(1)}" style="visibility:hidden"/></g>`).join("");
+  return `<svg class="plateSvg" viewBox="0 0 200 200" aria-hidden="true"><g class="arcs">${secs}</g>
+    <circle class="dish" cx="100" cy="100" r="64"/><circle class="rim" cx="100" cy="100" r="50"/>
+    <text class="ctr" x="100" y="97" text-anchor="middle" dominant-baseline="central">${center}</text><g class="garnish"></g></svg>`;
+}
+function setArcs(root,v){
+  for(const n of NUTS){ const x=v[n.k], pb=Math.min(1,x.b/x.t), pt=Math.min(1,(x.b+x.a)/x.t);
+    const bas=root.querySelector(`[data-k="${n.k}b"]`), ad=root.querySelector(`[data-k="${n.k}a"]`); if(!bas) continue;
+    bas.setAttribute("stroke-dasharray",`${(pb*SEG).toFixed(1)} ${PC.toFixed(1)}`); bas.style.visibility=pb*SEG<1?"hidden":"visible";
+    ad.setAttribute("stroke-dasharray",`${(pt*SEG).toFixed(1)} ${PC.toFixed(1)}`); ad.style.visibility=(pt-pb)*SEG<1?"hidden":"visible"; }
+}
+function setGarnish(root,ems){
+  const g=root.querySelector(".garnish"); if(!g) return; ems=ems.slice(0,6); const n=ems.length;
+  const key=ems.join(""); if(g.dataset.key===key) return; g.dataset.key=key;
+  g.innerHTML=ems.map((e,i)=>{ const deg=n===1?90:150-i*(120/(n-1)), a=deg*Math.PI/180;
+    return `<text x="${(100+43*Math.cos(a)).toFixed(1)}" y="${(104+36*Math.sin(a)).toFixed(1)}" text-anchor="middle" dominant-baseline="central">${e}</text>`; }).join("");
+}
+function nrowsHTML(big){
+  return `<div class="nrows ${big?"big":""}">${NUTS.map(n=>`<div class="nrow ${n.cls}"><span class="dot"></span><b>${n.name}</b><span class="plus" data-plus="${n.k}" hidden></span><span class="val"><span data-v="${n.k}">0</span> מתוך ${fmt(T()[n.t])} ${n.unit}</span>${big?`<span class="pct" data-pc="${n.k}">0%</span>`:""}</div>`).join("")}</div>`;
+}
+function curVals(){ const {base,add}=totals(), t=T();
+  return {p:{b:base.protein_g,a:add.protein_g,t:t.protein}, ca:{b:base.calcium_mg,a:add.calcium_mg,t:t.calcium}, fe:{b:base.iron_mg,a:add.iron_mg,t:t.iron}}; }
+function paintPlate(root){
+  const v=curVals(); setArcs(root,v);
+  for(const n of NUTS){ const x=v[n.k], f=n.dec?n1:fmt;
+    const val=root.querySelector(`[data-v="${n.k}"]`); if(val) val.textContent=f(x.b+x.a);
+    const pl=root.querySelector(`[data-plus="${n.k}"]`); if(pl){ pl.hidden=x.a<(n.dec?0.05:1); pl.textContent="+"+f(x.a); }
+    const pc=root.querySelector(`[data-pc="${n.k}"]`); if(pc) pc.textContent=n0((x.b+x.a)/x.t*100)+"%"; }
+  setGarnish(root,[...Object.keys(F.picked).map(id=>ADD_EMO[id]||"🍽️"),...F.customs.map(()=>"✏️")]);
+}
+const later2=fn=>requestAnimationFrame(()=>requestAnimationFrame(fn));
+
+/* ---------- מצב הזרימה ---------- */
+let F = null;
+function newFlow(dish){ F={dish, demo:false, a:null, qi:0, answers:[], meatRecent:null, portion:null, b:null, shown:4, picked:{}, customs:[]}; }
+
+/* ---------- קלוד ---------- */
+let _sdk=null;
+async function loadSdk(){ if(!_sdk){ const m=await import(SDK_URL); _sdk=m.default; } return _sdk; }
+class AppErr extends Error{ constructor(code,detail){ super(code); this.code=code; this.detail=detail; } }
+
+async function askClaude(system,user,schema){
+  let Anthropic;
+  try{ Anthropic=await loadSdk(); }catch(e){ throw new AppErr("sdk",String(e)); }
+  const client=new Anthropic({apiKey:S.apiKey, dangerouslyAllowBrowser:true});
+  const model=S.model||"claude-opus-5";
+  const base={ model, max_tokens:8000, system, messages:[{role:"user",content:user}],
+               output_config:{ format:{type:"json_schema",schema} } };
+  if(model!=="claude-haiku-4-5") base.output_config.effort="low";
+  let r;
+  try{
+    if(model==="claude-opus-5"){
+      try{ r=await client.beta.messages.create({...base, betas:["server-side-fallback-2026-07-01"], fallbacks:"default"}); }
+      catch(e){ if(e instanceof Anthropic.BadRequestError) r=await client.messages.create(base); else throw e; }
+    } else r=await client.messages.create(base);
+  }catch(e){
+    if(e instanceof Anthropic.AuthenticationError) throw new AppErr("auth",e.message);
+    if(e instanceof Anthropic.PermissionDeniedError) throw new AppErr("perm",e.message);
+    if(e instanceof Anthropic.RateLimitError) throw new AppErr("rate",e.message);
+    if(e instanceof Anthropic.BadRequestError) throw new AppErr("bad",e.message);
+    if(e instanceof Anthropic.APIConnectionError) throw new AppErr("net",e.message);
+    if(e instanceof Anthropic.APIError) throw new AppErr("api",(e.status||"")+" "+e.message);
+    throw new AppErr("net",String(e));
+  }
+  if(r.stop_reason==="refusal") throw new AppErr("refusal","");
+  if(r.stop_reason==="max_tokens") throw new AppErr("long","");
+  const text=r.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+  try{ return JSON.parse(text); }catch(e){ throw new AppErr("parse",text.slice(0,300)); }
+}
+
+const str={type:"string"}, num={type:"number"};
+const SCHEMA_A={type:"object",additionalProperties:false,
+  required:["is_food","dish_name","kashrut","questions","portions"],
+  properties:{
+    is_food:{type:"boolean"}, dish_name:str, kashrut:{type:"string",enum:["meat","dairy","parve"]},
+    questions:{type:"array",items:{type:"object",additionalProperties:false,required:["text","options","default_index"],
+      properties:{text:str, options:{type:"array",items:str}, default_index:{type:"integer"}}}},
+    portions:{type:"array",items:{type:"object",additionalProperties:false,required:["label","desc","grams"],
+      properties:{label:str, desc:str, grams:num}}}
+  }};
+function schemaB(ids){ return {type:"object",additionalProperties:false,
+  required:["base","base_note","has","missing","has_vitc","additions","tip","later"],
+  properties:{
+    base:{type:"object",additionalProperties:false,required:["kcal","protein_g","calcium_mg","iron_mg"],
+      properties:{kcal:num,protein_g:num,calcium_mg:num,iron_mg:num}},
+    base_note:str, has:{type:"array",items:str}, missing:{type:"array",items:str}, has_vitc:{type:"boolean"},
+    additions:{type:"array",items:{type:"object",additionalProperties:false,required:["id","why"],
+      properties:{id:{type:"string",enum:ids}, why:str}}},
+    tip:str, later:{type:"array",items:str}
+  }}; }
+const SCHEMA_C={type:"object",additionalProperties:false,required:["label","amount","kcal","protein_g","calcium_mg","iron_mg"],
+  properties:{label:str,amount:str,kcal:num,protein_g:num,calcium_mg:num,iron_mg:num}};
+
+function brain(){
+  const t=T();
+  return `אתה עוזר תזונה להורים של ילדה בגיל ${t.label}, רזה, בתקופת גדילה. ההורים כותבים מנה שהיא עומדת לאכול, ואתה עוזר להפוך אותה למזינה יותר בעזרת תוספות קטנות. אתה לא רופא ולא נותן ייעוץ רפואי.
+
+כללים שמחייבים אותך:
+1. אין מאכל שמגביה. המטרה היא שלא יחסרו אנרגיה, חלבון, סידן וברזל. יעדים יומיים: חלבון ${t.protein} גרם, סידן ${t.calcium} מ"ג, ברזל ${t.iron} מ"ג.
+2. סידן הוא העדיפות הראשונה בגיל הזה (שיא בניית העצם), ואחריו חלבון, אנרגיה וברזל.
+3. ויטמין C באותה ארוחה משפר ספיגת ברזל מהצומח.
+4. משקאות עשירים (שוקו, מיץ) רק כחלק מהארוחה, לא בין הארוחות.
+5. אף פעם לא תוספי תזונה, לא ספירת קלוריות כמטרה, ולא עצות על כמה הילדה צריכה לאכול או לסיים. כל עצה היא על מה ההורה שם בצלחת. בלי שיפוטיות, גם כשמדובר באוכל מהיר.
+6. כשרות: ${S.kosher?`שומרים. לא מערבבים בשר וחלב, וממתינים ${S.waitHours} שעות אחרי בשרי לפני חלבי. דגים וביצים הם פרווה. למנה בשרית אסור להציע תוספת חלבית. מסעדות בשריות (כולל מקדונלד'ס כשר) הן בשריות.`:"לא רלוונטי."}
+7. מה שהיא לא אוכלת: ${S.dislikes||"לא צוין"}. אל תציע את אלה.
+8. כתוב בעברית פשוטה וקצרה, בלי מקפים ארוכים.`;
+}
+function addsTable(list){
+  return list.map(a=>`${a.id} | ${a.label} (${a.amount}) | ${a.k==="dairy"?"חלבי":a.k==="meat"?"בשרי":"פרווה"} | נותן: ${a.gives.join(", ")}`).join("\n");
+}
+async function callA(dish){
+  const user=`המנה: "${FAV_HINT[dish]||dish}"
+
+החזר:
+- is_food: האם זה מאכל או ארוחה.
+- dish_name: שם קצר ומסודר של המנה.
+- kashrut: meat אם יש בשר או עוף, dairy אם יש מוצרי חלב, אחרת parve.
+- questions: עד 2 שאלות הבהרה, רק אם התשובה משנה באמת את הערכים התזונתיים (למשל סוג השמנת, מטוגן או בתנור, עם ביצה או בלי, איזה גודל ארוחה ברשת). לכל שאלה 2 עד 4 אפשרויות קצרות, ו-default_index של האפשרות הנפוצה בבית ישראלי. אם אין צורך, רשימה ריקה. אל תוסיף אפשרות "אחר", היא מתווספת לבד.
+- portions: בדיוק 3 גדלים למנה הזו, מהקטן לגדול: label הוא "קטנה", "בינונית", "גדולה". desc במידות של בית שמתאימות למנה (כוסות, כפות, יחידות, פרוסות, גודל אגרוף או כף יד), מתאים לילדה בת 12. grams הוא המשקל המשוער של המנה כולה.`;
+  return askClaude(brain(),user,SCHEMA_A);
+}
+function allowedAdds(){
+  let list=activeAdds();
+  if(S.kosher && F.a){
+    if(F.a.kashrut==="meat") list=list.filter(a=>a.k!=="dairy");
+    if(F.a.kashrut==="dairy") list=list.filter(a=>a.k!=="meat");
+    if(F.a.kashrut==="parve" && F.meatRecent) list=list.filter(a=>a.k!=="dairy");
+  }
+  return list;
+}
+async function callB(){
+  const list=allowedAdds();
+  const qa=F.answers.map(x=>`- ${x.q}: ${x.a}`).join("\n")||"(בלי שאלות)";
+  const user=`המנה: "${F.a.dish_name}"
+תשובות ההורה:
+${qa}
+גודל המנה: ${F.portion.label}, ${F.portion.desc}${F.portion.grams?` (בערך ${n0(F.portion.grams)} גרם)`:""}
+
+טבלת התוספות המותרות (מזהה | שם וכמות | כשרות | מה נותן). מותר לבחור רק מתוכה:
+${addsTable(list)}
+
+החזר:
+- base: הערכה של הערכים התזונתיים של המנה כפי שתוארה, בלי תוספות: kcal, protein_g, calcium_mg, iron_mg. מספרים מציאותיים. למנה של רשת מזון, לפי הערכים שהרשת מפרסמת.
+- base_note: משפט אחד שמסביר על מה ההערכה מבוססת (כמויות עיקריות).
+- has: 1 עד 4 דברים שכבר יש במנה (למשל "פחמימה", "שומן", "ויטמין C").
+- missing: 1 עד 3 דברים שחסרים בה מתוך: חלבון, סידן, ברזל, אנרגיה, ירק, ויטמין C.
+- has_vitc: האם יש במנה מקור ממשי לוויטמין C.
+- additions: עד 12 מזהים מהטבלה, מסודרים מהמתאים ביותר לפחות מתאים. בחר רק תוספות שבאמת משתלבות במנה הזו בטעם ובהגשה, ושמשלימות את מה שחסר. אל תציע תוספת שכבר נמצאת במנה. לכל אחת why: חצי משפט על איך משלבים אותה במנה הזו.
+- tip: טיפ אחד קצר ומעשי למנה הזו, ברוח הכללים.
+- later: 1 עד 3 הצעות קצרות למה כדאי להשלים בהמשך היום, אחרי הארוחה הזו, כדי לסגור את מה שחסר בה (בעיקר סידן, ירק ופרי). כל הצעה היא מאכל שהיא אוכלת, מתוך הטבלה או מהמנות הקבועות. אם הארוחה בשרית, ציין שמוצרי חלב רק אחרי ההמתנה.`;
+  return askClaude(brain(),user,schemaB(list.map(a=>a.id)));
+}
+async function callC(text){
+  const user=`ההורה רוצה להוסיף למנה "${F.a.dish_name}" תוספת משלו: "${text}".
+החזר label קצר, amount במידה של בית, והערכה של kcal, protein_g, calcium_mg, iron_mg לכמות הזו.`;
+  return askClaude(brain(),user,SCHEMA_C);
+}
+
+/* ---------- הדגמה בלי מפתח ---------- */
+const DEMO = {
+  "פסטה רוזה עם בולגרית":{
+    a:{is_food:true,dish_name:"פסטה רוזה עם בולגרית",kashrut:"dairy",
+       questions:[{text:"איזו שמנת ברוטב?",options:["שמנת לבישול 15%","שמנת מתוקה 38%","בלי שמנת, רק חלב"],default_index:0},
+                  {text:"מה בסיס הרוטב?",options:["רסק או רוטב עגבניות","עגבניות טריות מבושלות"],default_index:0}],
+       portions:[{label:"קטנה",desc:"כוס פסטה מבושלת, בגודל אגרוף",grams:190},{label:"בינונית",desc:"כוס וחצי פסטה",grams:280},{label:"גדולה",desc:"2 כוסות פסטה",grams:370}]},
+    b:{base:{kcal:480,protein_g:17,calcium_mg:190,iron_mg:2},
+       base_note:"לפי כוס וחצי פסטה מבושלת, 4 כפות רוטב עגבניות, 3 כפות שמנת 15% וקוביית בולגרית.",
+       has:["פחמימה","שומן","מעט סידן"],missing:["חלבון","סידן","ירק"],has_vitc:true,
+       additions:[{id:"yellow_grated",why:"מפזרים מעל הפסטה החמה והיא נמסה."},{id:"veg_sticks",why:"בצד, בלי בצל. הפלפל מוסיף ויטמין C."},
+                  {id:"shoko",why:"כוס קטנה ליד הארוחה, לא לפניה."},{id:"egg_hard",why:"ביצה קשה בצד או חתוכה מעל."},
+                  {id:"olive_oil",why:"כף מעל הפסטה, לא מרגישים."},{id:"mozzarella",why:"מעורבבת ברוטב החם."},
+                  {id:"tuna",why:"מעורבבת ברוטב העגבניות."},{id:"olives",why:"חתוכים בתוך הרוטב."},{id:"citrus",why:"לקינוח."}],
+       tip:"אם היא מתמלאת מהר, מגישים מנה קטנה עם גבינה מעל, ואת השוקו שומרים לסוף.",
+       later:["יוגורט או מעדן בארוחת הביניים","פרי הדר או תותים אחר הצהריים","ביצה או טונה בארוחת הערב, בשביל החלבון"]}},
+  "פסטה רוזה":{
+    a:{is_food:true,dish_name:"פסטה רוזה",kashrut:"dairy",
+       questions:[{text:"איזו שמנת ברוטב?",options:["שמנת לבישול 15%","שמנת מתוקה 38%","בלי שמנת, רק חלב"],default_index:0},
+                  {text:"מה בסיס הרוטב?",options:["רסק או רוטב עגבניות","עגבניות טריות מבושלות"],default_index:0}],
+       portions:[{label:"קטנה",desc:"כוס פסטה מבושלת, בגודל אגרוף",grams:180},{label:"בינונית",desc:"כוס וחצי פסטה",grams:270},{label:"גדולה",desc:"2 כוסות פסטה",grams:360}]},
+    b:{base:{kcal:450,protein_g:13,calcium_mg:60,iron_mg:1.9},
+       base_note:"לפי כוס וחצי פסטה מבושלת, 4 כפות רוטב עגבניות ו-3 כפות שמנת 15%, בלי גבינה.",
+       has:["פחמימה","שומן","מעט ויטמין C"],missing:["סידן","חלבון","ירק"],has_vitc:true,
+       additions:[{id:"bulgarian",why:"מפוררת מעל, כמו שהיא אוהבת."},{id:"yellow_grated",why:"מפזרים מעל הפסטה החמה והיא נמסה."},
+                  {id:"veg_sticks",why:"בצד, בלי בצל. הפלפל מוסיף ויטמין C."},{id:"shoko",why:"כוס קטנה ליד הארוחה, לא לפניה."},
+                  {id:"egg_hard",why:"ביצה קשה בצד או חתוכה מעל."},{id:"mozzarella",why:"מעורבבת ברוטב החם."},
+                  {id:"olive_oil",why:"כף מעל הפסטה, לא מרגישים."},{id:"tuna",why:"מעורבבת ברוטב העגבניות."},{id:"citrus",why:"לקינוח."}],
+       tip:"בלי גבינה, הפסטה הזו כמעט בלי סידן. קוביית בולגרית או חופן גבינה צהובה משנים את התמונה.",
+       later:["יוגורט או מעדן בארוחת הביניים","גבינה צהובה בכריך של הערב","פרי הדר או תותים אחר הצהריים"]}},
+  "שקשוקה":{
+    a:{is_food:true,dish_name:"שקשוקה",kashrut:"parve",
+       questions:[{text:"כמה ביצים במנה שלה?",options:["ביצה אחת","2 ביצים","בלי ביצים הפעם"],default_index:0}],
+       portions:[{label:"קטנה",desc:"חצי כוס רוטב עם הביצה",grams:180},{label:"בינונית",desc:"כוס רוטב עם הביצה",grams:280},{label:"גדולה",desc:"כוס וחצי רוטב",grams:380}]},
+    b:{base:{kcal:230,protein_g:10,calcium_mg:70,iron_mg:2.2},
+       base_note:"לפי כוס רוטב מעגבניות ופלפל, ביצה אחת וכף שמן.",
+       has:["ויטמין C","חלבון מהביצה","ירק"],missing:["אנרגיה","סידן"],has_vitc:true,
+       additions:[{id:"bread",why:"לניגוב הרוטב. מוסיף אנרגיה בלי להגדיל את הצלחת."},{id:"bulgarian",why:"מפוררת מעל השקשוקה החמה."},
+                  {id:"egg_in",why:"עוד ביצה בתוך הרוטב."},{id:"yellow_grated",why:"מפזרים מעל ומכסים לדקה."},
+                  {id:"olive_oil",why:"כף מעל בסוף הבישול."},{id:"olives",why:"בתוך הרוטב או בצד."},{id:"avocado",why:"פרוס בצד."},{id:"citrus",why:"לקינוח."}],
+       tip:"ביצה בכל מנה, ופיתה לניגוב: כך מנה קלה הופכת לארוחה.",
+       later:["שוקו או יוגורט בארוחת הביניים, בשביל הסידן","גבינה צהובה בכריך של הערב"]}}
+};
+
+/* ---------- מסכים ---------- */
+function render(html){ main.innerHTML=html; window.scrollTo(0,0); }
+function crumbs(){
+  if(!F||!F.a) return "";
+  const parts=[`<button class="crumb" data-go="home">${emo(F.a.dish_name)} <b>${esc(F.a.dish_name)}</b></button>`];
+  F.answers.forEach((x,i)=>parts.push(`<button class="crumb" data-go="q${i}">${esc(x.a)}</button>`));
+  if(F.portion) parts.push(`<button class="crumb" data-go="portion">${esc(F.portion.label)}</button>`);
+  return `<div class="crumbs">${parts.join("")}</div>`;
+}
+function totalSteps(){ return F.a.questions.length + (S.kosher&&F.a.kashrut==="parve"?1:0) + 2; }
+function stepIndex(){ return F.qi + (F.meatRecent!==null&&F.a.kashrut==="parve"?1:0) + (F.portion?1:0); }
+function prog(extra=0){ const p=Math.round((stepIndex()+1+extra)/(totalSteps()+1)*100); return `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p}"><i style="width:${p}%"></i></div>`; }
+
+function home(){
+  F=null;
+  render(`<section class="screen">
+    ${!S.apiKey?`<div class="banner"><span>מצב הדגמה: עובדות שתי הפסטות והשקשוקה.</span><button id="toKey">חיבור</button></div>`:""}
+    <div class="homehero"><div class="txt"><p class="hello" style="margin:0">${hello()} 👋</p>
+      <h1>מה ${esc(who())} אוכלת עכשיו?</h1></div><div id="heroPlate">${plateHTML(emo(S.favs[0]||""))}</div></div>
+    <p class="lead">כותבים מנה, ומקבלים תוספות קטנות שממלאות את הצלחת במה שחסר.</p>
+    <h3 class="sec">המנות הקבועות</h3>
+    <div class="bento">${S.favs.map(f=>`<button class="tile" data-dish="${esc(f)}"><span class="mini" aria-hidden="true">${emo(f)}</span><span>${esc(f)}</span></button>`).join("")}</div>
+    <div class="bottom">
+      <form class="ask" id="askForm" autocomplete="off">
+        <input id="dish" type="text" inputmode="text" enterkeyhint="go" placeholder="או כתבו מנה, למשל אורז עם שניצל" aria-label="מה המנה">
+        <button class="go" type="submit" aria-label="המשך"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      </form>
+    </div>
+  </section>`);
+  heroShow();
+  $("#askForm").onsubmit=e=>{e.preventDefault(); const v=$("#dish").value.trim(); if(v) start(v); else $("#dish").focus();};
+  main.querySelectorAll("[data-dish]").forEach(b=>b.onclick=()=>start(b.dataset.dish));
+  const k=$("#toKey"); if(k) k.onclick=()=>sheetSettings("key");
+}
+let _heroT=null;
+function heroShow(){
+  clearInterval(_heroT); const root=$("#heroPlate"); if(!root) return;
+  const demo=[{p:.72,ca:.55,fe:.4},{p:.5,ca:.8,fe:.35},{p:.85,ca:.45,fe:.6}]; let i=0;
+  const paint=()=>{ const d=demo[i%demo.length]; setArcs(root,{p:{b:d.p*.7,a:d.p*.3,t:1},ca:{b:d.ca*.55,a:d.ca*.45,t:1},fe:{b:d.fe*.8,a:d.fe*.2,t:1}}); };
+  later2(paint);
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  _heroT=setInterval(()=>{ const r=$("#heroPlate"); if(!r) return clearInterval(_heroT); i++;
+    const c=r.querySelector(".ctr"); c.style.opacity=0; setTimeout(()=>{ c.textContent=emo(S.favs[i%S.favs.length]||""); c.style.opacity=1; paint(); },300); },2800);
+}
+function loading(msg,set){
+  render(`<section class="screen"><div class="load"><div class="spin" role="status" aria-label="טוען" style="width:170px">${plateHTML(set[0])}</div><h2>${esc(msg)}</h2><p class="tiny">זה לוקח כמה שניות</p></div></section>`);
+  setArcs(main,{p:{b:.55,a:0,t:1},ca:{b:.55,a:0,t:1},fe:{b:.55,a:0,t:1}});
+}
+function showErr(e,retry){
+  const M={auth:"מפתח ה-API לא תקין. בדקו אותו בהגדרות.",perm:"למפתח אין הרשאה למודל הזה. נסו מודל אחר בהגדרות.",
+    rate:"יותר מדי בקשות ברגע זה. נסו שוב בעוד דקה.",bad:"הבקשה נדחתה. ייתכן שנגמרה היתרה בחשבון ה-API.",
+    net:"אין חיבור. בדקו את האינטרנט ונסו שוב.",sdk:"לא הצלחתי לטעון את רכיב החיבור. בדקו את האינטרנט ונסו שוב.",
+    api:"תקלה זמנית אצל Anthropic. נסו שוב בעוד רגע.",refusal:"קלוד לא ענה על הבקשה הזו. נסו לנסח את המנה אחרת.",
+    long:"התשובה נקטעה. נסו שוב.",parse:"התשובה חזרה במבנה לא צפוי. נסו שוב.",notfood:"לא זיהיתי כאן מאכל. כתבו מנה, למשל: אורז עם שניצל."};
+  render(`<section class="screen">${crumbs()}<div class="err">${esc(M[e.code]||"משהו השתבש. נסו שוב.")}${e.detail?`<details><summary>פרטים טכניים</summary>${esc(e.detail)}</details>`:""}</div>
+    <div class="bottom"><button class="cta" id="again">נסו שוב</button><button class="cta sec" id="back">חזרה להתחלה</button>${e.code==="auth"||e.code==="perm"||e.code==="bad"?`<button class="cta sec" id="set">להגדרות</button>`:""}</div></section>`);
+  $("#again").onclick=retry; $("#back").onclick=home; const s=$("#set"); if(s) s.onclick=()=>sheetSettings("key");
+  bindCrumbs();
+}
+async function start(dish){
+  newFlow(dish);
+  const demo=DEMO[dish];
+  if(!S.apiKey){
+    if(!demo){ return sheetSettings("key","כדי לבדוק מנות משלכם צריך לחבר מפתח API. בינתיים אפשר לנסות את שתי מנות ההדגמה."); }
+    F.demo=true; F.a=demo.a; return nextQ();
+  }
+  loading("בודק את המנה",[emo(dish),"🔎","✨"]);
+  try{
+    const a=await callA(dish);
+    if(!a.is_food) throw new AppErr("notfood");
+    a.questions=(a.questions||[]).slice(0,2).filter(q=>q.options&&q.options.length>=2);
+    if(!a.portions||a.portions.length<3) a.portions=[{label:"קטנה",desc:"בערך חצי צלחת",grams:0},{label:"בינונית",desc:"צלחת רגילה של ילדה",grams:0},{label:"גדולה",desc:"צלחת מלאה",grams:0}];
+    F.a=a; nextQ();
+  }catch(e){ showErr(e,()=>start(dish)); }
+}
+function nextQ(){
+  if(F.qi<F.a.questions.length) return screenQ();
+  if(S.kosher && F.a.kashrut==="parve" && F.meatRecent===null && activeAdds().some(a=>a.k==="dairy")) return screenMeat();
+  if(!F.portion) return screenPortion();
+  return advise();
+}
+function otherBox(ph,label){ return `<div id="otherBox" hidden class="other"><input class="field" id="otherTxt" type="text" placeholder="${esc(ph)}" aria-label="${esc(label)}"><button class="cta mini" id="otherOk">המשך</button></div>`; }
+function screenQ(){
+  const q=F.a.questions[F.qi]; const d=Math.min(Math.max(q.default_index|0,0),q.options.length-1);
+  render(`<section class="screen">${crumbs()}${prog()}
+    <div class="qhead"><span class="badge" aria-hidden="true">${emo(F.a.dish_name)}</span><h2>${esc(q.text)}</h2></div>
+    <div class="opts">${q.options.map((o,i)=>`<button class="opt ${i===d?"def":""}" data-i="${i}"><span class="t"><span>${esc(o)}</span></span>${i===d?`<span class="pill">הכי נפוץ</span>`:""}</button>`).join("")}
+      <button class="opt ghost" id="other"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>אחר, אכתוב בעצמי</span></span></button></div>
+    ${otherBox("כתבו כאן","תשובה אחרת")}
+    <div class="linkrow"><button class="link" id="skip">דלגו, לפי הכי נפוץ</button></div></section>`);
+  const pick=a=>{F.answers[F.qi]={q:q.text,a}; F.qi++; nextQ();};
+  main.querySelectorAll(".opt[data-i]").forEach(b=>b.onclick=()=>pick(q.options[+b.dataset.i]));
+  $("#skip").onclick=()=>pick(q.options[d]);
+  wireOther(v=>pick(v)); bindCrumbs();
+}
+function wireOther(cb){
+  $("#other").onclick=()=>{ $("#otherBox").hidden=false; $("#otherTxt").focus(); };
+  const go=()=>{ const v=$("#otherTxt").value.trim(); if(v) cb(v); else $("#otherTxt").focus(); };
+  $("#otherOk").onclick=go; $("#otherTxt").onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } };
+}
+function screenMeat(){
+  render(`<section class="screen">${crumbs()}${prog()}
+    <div class="qhead"><span class="badge" aria-hidden="true">⏱️</span><h2>${esc(who())} אכלה בשרי ב${S.waitHours==1?"שעה האחרונה":S.waitHours+" השעות האחרונות"}?</h2></div>
+    <p class="lead">המנה פרווה. אם כן, אציע רק תוספות פרווה.</p>
+    <div class="opts"><button class="opt def" data-v="0"><span class="em" aria-hidden="true">🧀</span><span class="t"><span>לא</span><small>אפשר גם תוספות חלביות</small></span><span class="pill">הכי נפוץ</span></button>
+      <button class="opt" data-v="1"><span class="em" aria-hidden="true">🍗</span><span class="t"><span>כן</span><small>רק תוספות פרווה</small></span></button></div></section>`);
+  main.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{F.meatRecent=b.dataset.v==="1"; nextQ();});
+  bindCrumbs();
+}
+function screenPortion(){
+  const P=F.a.portions.slice(0,3), sz=[20,30,40];
+  render(`<section class="screen">${crumbs()}${prog()}
+    <div class="qhead"><span class="badge" aria-hidden="true">🍽️</span><h2>כמה יש בצלחת?</h2></div>
+    <div class="opts">${P.map((p,i)=>`<button class="opt ${i===1?"def":""}" data-i="${i}"><span class="plate" aria-hidden="true"><i style="width:${sz[i]}px;height:${sz[i]}px"></i></span><span class="t"><span>${esc(p.label)}</span><small>${esc(p.desc)}</small></span>${i===1?`<span class="pill">הכי נפוץ</span>`:""}</button>`).join("")}
+      <button class="opt ghost" id="other"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>אחר, אכתוב בעצמי</span></span></button></div>
+    ${otherBox("למשל: 5 כפות, או חצי שניצל","כמות אחרת")}</section>`);
+  main.querySelectorAll(".opt[data-i]").forEach(b=>b.onclick=()=>{F.portion=P[+b.dataset.i]; nextQ();});
+  wireOther(v=>{ if(F.demo) return sheetSettings("key","בהדגמה אפשר לבחור רק בין שלושת הגדלים. כמות חופשית עובדת אחרי חיבור מפתח.");
+    F.portion={label:"כמות אחרת",desc:v,grams:0}; nextQ(); });
+  bindCrumbs();
+}
+async function advise(){
+  if(F.demo){
+    const d=DEMO[F.dish].b, i=F.a.portions.indexOf(F.portion), k=i===0?0.68:i===2?1.32:1;
+    const ok=new Set(allowedAdds().map(a=>a.id));
+    F.b={...d, base:{kcal:d.base.kcal*k,protein_g:d.base.protein_g*k,calcium_mg:d.base.calcium_mg*k,iron_mg:d.base.iron_mg*k},
+         additions:d.additions.filter(x=>ok.has(x.id))};
+    return screenAdds(true);
+  }
+  loading("מחפש תוספות שמתאימות",["🧀","🥚","🍊"]);
+  try{
+    const b=await callB();
+    const ok=new Map(allowedAdds().map(a=>[a.id,a])), seen=new Set();
+    b.additions=(b.additions||[]).filter(x=>ok.has(x.id)&&!seen.has(x.id)&&seen.add(x.id));
+    F.b=b; screenAdds(true);
+  }catch(e){ showErr(e,advise); }
+}
+const addById=id=>ADDS.find(a=>a.id===id);
+function sumLabel(){ const n=Object.keys(F.picked).length+F.customs.length; return n?`לסיכום עם ${n===1?"תוספת אחת":n+" תוספות"}`:"לסיכום בלי תוספות"; }
+function stepHTML(q){ return q?`<span class="step"><button data-d="-1" aria-label="פחות">−</button><output>${q}</output><button data-d="1" aria-label="עוד">+</button><em>כמה מנות</em></span>`:""; }
+function screenAdds(first){
+  const b=F.b, list=b.additions.slice(0,F.shown), more=b.additions.length>F.shown;
+  render(`<section class="screen">${crumbs()}
+    <div class="live" id="live">${plateHTML(emo(F.a.dish_name))}${nrowsHTML(false)}</div>
+    <div><h2>מה להוסיף?</h2>
+      <p style="margin:8px 0 0">${b.has.map(x=>`<span class="tag has">יש: ${esc(x)}</span>`).join("")}${b.missing.map(x=>`<span class="tag miss">חסר: ${esc(x)}</span>`).join("")}</p></div>
+    <div class="opts" id="addList">
+      ${list.map(x=>{const a=addById(x.id), q=F.picked[a.id]||0; return `<div class="opt ${q?"sel":""}" data-id="${a.id}" role="checkbox" aria-checked="${q?"true":"false"}" tabindex="0">
+        <span class="em" aria-hidden="true">${ADD_EMO[a.id]||"🍽️"}</span>
+        <span class="t"><span>${esc(a.label)}${a.v?"":` <span class="tag est">הערכה</span>`}</span><small>${esc(a.amount)}</small><small>${esc(x.why)}</small><span class="gives">${a.gives.map(g=>`<i class="${GIVE_CLS[g]||""}">+ ${esc(g)}</i>`).join("")}</span>
+          <span class="stepwrap">${stepHTML(q)}</span></span>
+        <span class="check" aria-hidden="true"></span></div>`;}).join("")}
+      ${F.customs.map((c,i)=>`<div class="opt sel" data-c="${i}"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>${esc(c.label)} <span class="tag est">הערכה</span></span><small>${esc(c.amount)}</small></span><span class="check" aria-hidden="true"></span></div>`).join("")}
+      <button class="opt ghost" id="other"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>אחר, אכתוב בעצמי</span></span></button>
+      <button class="opt ghost" id="more" ${more?"":"disabled"}><span class="em" aria-hidden="true">✨</span><span class="t"><span>תציע לי אפשרויות נוספות</span>${more?"":`<small>אלה כל התוספות שמתאימות מהרשימה שלכם</small>`}</span></button>
+    </div>
+    ${otherBox("למשל: כף שמנת חמוצה","תוספת אחרת")}
+    ${b.tip?`<div class="tip"><span class="em" aria-hidden="true">💡</span><span><b>טיפ למנה</b>${esc(b.tip)}</span></div>`:""}
+    <div class="bottom"><button class="cta" id="sum">${sumLabel()}</button></div></section>`);
+  const live=$("#live"); if(first) later2(()=>paintPlate(live)); else paintPlate(live);
+  const refresh=el=>{ const q=F.picked[el.dataset.id]||0; el.classList.toggle("sel",!!q); el.setAttribute("aria-checked",q?"true":"false");
+    el.querySelector(".stepwrap").innerHTML=stepHTML(q); paintPlate(live); $("#sum").textContent=sumLabel(); };
+  main.querySelectorAll("#addList .opt[data-id]").forEach(el=>{
+    const id=el.dataset.id;
+    const toggle=()=>{ if(F.picked[id]) delete F.picked[id]; else F.picked[id]=1; refresh(el); };
+    el.onclick=e=>{ const d=e.target.closest("[data-d]"); if(d){ e.stopPropagation(); const v=(F.picked[id]||1)+(+d.dataset.d); if(v<=0) delete F.picked[id]; else F.picked[id]=Math.min(v,4); return refresh(el); } toggle(); };
+    el.onkeydown=e=>{ if(e.target===el&&(e.key===" "||e.key==="Enter")){ e.preventDefault(); toggle(); } };
+  });
+  main.querySelectorAll("#addList .opt[data-c]").forEach(el=>el.onclick=()=>{ F.customs.splice(+el.dataset.c,1); keep(screenAdds); });
+  $("#more").onclick=()=>{ if(more){ F.shown+=4; keep(screenAdds); } };
+  wireOther(addCustom);
+  $("#otherOk").textContent="הוסף";
+  $("#sum").onclick=screenSum; bindCrumbs();
+}
+function keep(fn){ const y=window.scrollY; fn(); main.firstElementChild.style.animation="none"; window.scrollTo(0,y); }
+async function addCustom(v){
+  if(F.demo) return sheetSettings("key","תוספת חופשית עובדת אחרי חיבור מפתח. בהדגמה אפשר לבחור מהרשימה.");
+  const btn=$("#otherOk"); btn.disabled=true; btn.textContent="בודק";
+  try{ const c=await callC(v); F.customs.push(c); keep(screenAdds); }
+  catch(e){ showErr(e,()=>screenAdds(true)); }
+}
+function totals(){
+  const base=F.b.base, add={kcal:0,protein_g:0,calcium_mg:0,iron_mg:0}, lines=[]; let vitc=!!F.b.has_vitc;
+  for(const [id,q] of Object.entries(F.picked)){ const a=addById(id); if(!a) continue;
+    add.kcal+=a.kcal*q; add.protein_g+=a.protein*q; add.calcium_mg+=a.calcium*q; add.iron_mg+=a.iron*q; if(a.vitc>=10) vitc=true;
+    lines.push({em:ADD_EMO[id]||"🍽️",label:a.label+(q>1?` (${q} מנות)`:""), kcal:a.kcal*q, p:a.protein*q, ca:a.calcium*q, fe:a.iron*q, est:!a.v}); }
+  for(const c of F.customs){ add.kcal+=c.kcal; add.protein_g+=c.protein_g; add.calcium_mg+=c.calcium_mg; add.iron_mg+=c.iron_mg;
+    lines.push({em:"✏️",label:c.label, kcal:c.kcal, p:c.protein_g, ca:c.calcium_mg, fe:c.iron_mg, est:true}); }
+  return {base,add,lines,vitc};
+}
+function screenSum(){
+  const {base,add,lines,vitc}=totals(), t=T();
+  const tot={kcal:base.kcal+add.kcal,p:base.protein_g+add.protein_g,ca:base.calcium_mg+add.calcium_mg,fe:base.iron_mg+add.iron_mg};
+  const pc=x=>n0(x*100);
+  const what=l=>[l.p>=0.5?`${n1(l.p)} גרם חלבון`:"", l.ca>=5?`${fmt(l.ca)} מ"ג סידן`:"", l.fe>=0.2?`${n1(l.fe)} מ"ג ברזל`:"", `${fmt(l.kcal)} קלוריות`].filter(Boolean).join(" · ");
+  const later=(F.b.later||[]).filter(Boolean).slice(0,3);
+  render(`<section class="screen">${crumbs()}
+    <div class="sumhero" id="sumPlate">
+      <div class="name">${esc(F.a.dish_name)}${lines.length?" עם "+esc(lines.map(l=>l.label).join(", ")):""}</div>
+      ${plateHTML(emo(F.a.dish_name))}
+      <div class="kcal">${fmt(tot.kcal)} <small>קלוריות, בערך</small></div>
+      ${nrowsHTML(true)}
+      <div class="tiny">${lines.length?"צבע מלא: המנה עצמה. צבע בהיר: התוספות. ":""}היעד הוא של יום שלם, גיל ${t.label}.</div></div>
+    ${lines.length?`<div class="card"><h2>מה התוספות הוסיפו</h2><ul class="list">${lines.map(l=>`<li><span class="em" aria-hidden="true">${l.em}</span><span><b>${esc(l.label)}</b>${l.est?` <span class="tag est">הערכה</span>`:""}<br><span class="small">${what(l)}</span></span></li>`).join("")}</ul></div>`:""}
+    <div class="card mean"><h2 style="margin-bottom:0">מה המשמעות</h2>
+      <p class="sumline">הארוחה הזו נותנת בערך <b>${pc(tot.p/t.protein)}%</b> מהחלבון, <b>${pc(tot.ca/t.calcium)}%</b> מהסידן ו-<b>${pc(tot.fe/t.iron)}%</b> מהברזל של יום שלם.</p>
+      <div class="row"><span class="em" aria-hidden="true">🦴</span><span><b>סידן</b> בונה את העצם, ובגיל הזה נבנית רוב מסת העצם לכל החיים. לכן זה הרכיב שהכי שווה להשלים.${tot.ca/t.calcium<0.2?" בארוחה הזו יש ממנו מעט, אז כדאי שארוחה אחרת היום תכלול גבינה, יוגורט או שוקו.":""}</span></div>
+      <div class="row"><span class="em" aria-hidden="true">💪</span><span><b>חלבון</b> בונה שריר, עצם ורקמות. עדיף לפזר אותו על פני היום ולא להשלים הכל בערב.</span></div>
+      <div class="row"><span class="em" aria-hidden="true">⚡</span><span><b>ברזל</b> נחוץ לאנרגיה, לריכוז ולגדילה.${vitc?" יש בארוחה ויטמין C, והוא משפר את ספיגת הברזל מהצומח.":" עגבנייה, פלפל או פרי הדר באותה ארוחה משפרים את הספיגה שלו מהצומח."}${ageBand()==="young"?' מגיל 14 היעד עולה ל-15 מ"ג.':""}</span></div>
+      <div class="row"><span class="em" aria-hidden="true">🔥</span><span><b>קלוריות</b> הן הדלק של הגדילה. אין כאן יעד ואין ציון: המטרה היא רק שלא יחסר.</span></div>
+    </div>
+    ${later.length?`<div class="card"><h2>מה כדאי להשלים בהמשך היום</h2><ul class="plain">${later.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+    <p class="note"><span class="tag est">הערכה</span> ערכי המנה עצמה מוערכים${F.b.base_note?": "+esc(F.b.base_note):"."} ערכי התוספות מהרשימה קבועים, ממאגר USDA. המידע כללי ואינו תחליף לרופא או לדיאטנית ילדים.${F.demo?" זו מנת הדגמה.":""}</p>
+    <div class="bottom flat"><button class="cta" id="new">מנה חדשה</button><div class="linkrow"><button class="link" id="edit">שינוי התוספות</button></div></div></section>`);
+  later2(()=>paintPlate($("#sumPlate")));
+  $("#new").onclick=home; $("#edit").onclick=()=>screenAdds(true); bindCrumbs();
+}
+function bindCrumbs(){
+  main.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
+    const g=b.dataset.go;
+    if(g==="home") return home();
+    if(g==="portion"){ F.portion=null; F.b=null; F.picked={}; F.customs=[]; F.shown=4; return screenPortion(); }
+    const i=+g.slice(1); F.qi=i; F.answers.length=i; F.portion=null; F.meatRecent=null; F.b=null; F.picked={}; F.customs=[]; F.shown=4; screenQ();
+  });
+}
+
+/* ---------- חלוניות ---------- */
+const sheetRoot=$("#sheetRoot");
+function openSheet(title,body,onReady){
+  sheetRoot.innerHTML=`<div class="sheet" id="sh"><div class="panel" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grab" aria-hidden="true"></div><header><h3>${esc(title)}</h3><button class="iconbtn" id="shX" aria-label="סגירה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>${body}</div></div>`;
+  const close=()=>{ sheetRoot.innerHTML=""; if(!F) home(); };
+  $("#shX").onclick=close; $("#sh").onclick=e=>{ if(e.target.id==="sh") close(); };
+  if(onReady) onReady(close);
+}
+function sheetTips(){
+  openSheet("טיפים לגדילה",`<p class="lead">האוכל הוא רק חלק מהתמונה. אלה הדברים שהמחקר מצא שתומכים בגדילה ובבניית עצם בגיל הזה.</p>
+  ${TIP_GROUPS.map(g=>`<div class="card"><h2><span aria-hidden="true">${g.em}</span> ${esc(g.title)}</h2><div class="mean">${g.items.map(t=>`<div class="row" style="display:block"><b>${esc(t[0])}.</b> ${esc(t[1])}</div>`).join("")}</div></div>`).join("")}
+  <details class="card"><summary style="font-family:var(--display);font-weight:600;font-size:17px;cursor:pointer">מתי כדאי להתייעץ עם רופא ילדים</summary>
+    <p class="small">רוב הזמן מספיקים מעקב רגוע ותזונה טובה. כדאי להתייעץ אם מופיע אחד מאלה:</p><ul class="plain">${DOCTOR.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>
+  <div class="linkrow"><button class="link" id="tipHow">איך האפליקציה עובדת, ומה המקורות</button></div>`,
+  ()=>{ $("#tipHow").onclick=()=>{ sheetRoot.innerHTML=""; sheetHow(); }; });
+}
+function sheetHow(){ openSheet("איך זה עובד",`<div class="card"><ul class="plain">
+  <li>כותבים מנה. קלוד שואל עד 2 שאלות, ומעריך את הערכים שלה. זו <b>הערכה</b>, כי אף אחד לא שקל את הצלחת.</li>
+  <li>התוספות מגיעות רק מרשימה סגורה שאישרתם בהגדרות. קלוד בוחר מתוכה ולא ממציא.</li>
+  <li>הערכים של כל תוספת קבועים באפליקציה, ממאגר משרד החקלאות האמריקאי (USDA). תוספת שעוד לא אומתה מסומנת "הערכה".</li>
+  <li>היעדים היומיים הם ההמלצות הרשמיות לגיל (DRI). אף תוספת לא "מגביהה": המטרה היא שלא יחסר לגוף מה שהוא צריך כדי לגדול.</li>
+  <li>שום דבר לא נשמר בשרת. השם, ההעדפות והמפתח נשמרים רק בטלפון הזה.</li></ul></div>
+  <h4>מקורות</h4><div class="src">${SOURCES.map(esc).join("<br>")}</div>`); }
+function sheetSettings(focus,msg){
+  const groups={dairy:"🧀 חלבי",egg:"🥚 ביצים",protein:"🍗 בשר ודגים",fat:"🫒 אנרגיה",side:"🥙 בצד",veg:"🍊 ירק ופרי"};
+  const secKey=`<h4 id="keySec">חיבור לקלוד</h4>
+  <p class="tiny" style="margin:0">המפתח נשמר רק במכשיר הזה ונשלח רק ל-Anthropic. אל תשלחו אותו לאף אחד, גם לא בצ'אט.</p>
+  <label class="f">מפתח API (מדביקים כאן)<input class="field" id="sKey" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-..." value="${esc(S.apiKey)}"></label>
+  <label class="f">מודל<select class="field" id="sModel">${MODELS.map(m=>`<option value="${m.id}" ${S.model===m.id?"selected":""}>${esc(m.name)} (${esc(m.note)})</option>`).join("")}</select></label>
+  <div id="keyMsg" class="small" aria-live="polite"></div>
+  <button class="cta sec" id="sTest">בדיקת החיבור</button>`;
+  const body=`${msg?`<div class="banner"><span>${esc(msg)}</span></div>`:""}
+  ${S.apiKey?"":secKey}
+  <h4>הילדה</h4>
+  <label class="f">שם פרטי (נשמר רק בטלפון הזה)<input class="field" id="sName" type="text" value="${esc(S.name)}" autocomplete="off"></label>
+  <label class="f">תאריך לידה (קובע את היעדים היומיים)<input class="field" id="sBirth" type="date" value="${esc(S.birth)}"></label>
+  <label class="f">מנות קבועות, מופרדות בפסיק<textarea class="field" id="sFavs" rows="3">${esc(S.favs.join(", "))}</textarea></label>
+  <label class="f">מה היא לא אוכלת<input class="field" id="sDis" type="text" value="${esc(S.dislikes)}"></label>
+  <h4>כשרות</h4>
+  <div class="rowf"><span>שומרים כשרות</span><input class="switch" type="checkbox" id="sKosher" ${S.kosher?"checked":""} aria-label="שומרים כשרות"></div>
+  <label class="f">שעות המתנה אחרי בשרי<input class="field" id="sWait" type="number" min="0" max="6" step="1" inputmode="numeric" value="${esc(S.waitHours)}"></label>
+  <h4>התוספות המאושרות</h4><p class="tiny" style="margin:0">רק מה שמסומן יוצע. כבו מה שהיא לא תסכים לו.</p>
+  ${Object.entries(groups).map(([g,name])=>{const l=ADDS.filter(a=>a.g===g); return l.length?`<p class="small" style="margin:8px 0 0"><b>${name}</b></p>`+l.map(a=>`<div class="rowf"><span>${esc(a.label)} <span class="tiny">${esc(a.amount)}</span></span><input class="switch" type="checkbox" data-add="${a.id}" ${S.off.includes(a.id)?"":"checked"} aria-label="${esc(a.label)}"></div>`).join(""):"";}).join("")}
+  ${S.apiKey?secKey:""}
+  <button class="cta" id="sSave">שמירה</button>
+  <div class="linkrow"><button class="link" id="sWipe">מחיקת המפתח מהטלפון הזה</button></div>`;
+  openSheet("הגדרות",body,close=>{
+    const read=()=>{ S.name=$("#sName").value.trim(); S.birth=$("#sBirth").value; S.favs=$("#sFavs").value.split(/[,\n]/).map(x=>x.trim()).filter(Boolean);
+      if(!S.favs.length) S.favs=DEFAULT_FAVS.slice(); S.dislikes=$("#sDis").value.trim(); S.kosher=$("#sKosher").checked;
+      S.waitHours=Math.max(0,Math.min(6,parseInt($("#sWait").value,10)||0)); S.apiKey=$("#sKey").value.trim(); S.model=$("#sModel").value;
+      S.off=[...sheetRoot.querySelectorAll("[data-add]")].filter(x=>!x.checked).map(x=>x.dataset.add); save(); };
+    $("#sSave").onclick=()=>{ read(); sheetRoot.innerHTML=""; home(); };
+    $("#sWipe").onclick=()=>{ $("#sKey").value=""; read(); $("#keyMsg").textContent="המפתח נמחק מהטלפון הזה."; };
+    $("#sTest").onclick=async()=>{ read(); const m=$("#keyMsg"); if(!S.apiKey){ m.textContent="קודם הדביקו מפתח."; return; }
+      m.textContent="בודק..."; try{ const r=await askClaude("ענה ב-JSON בלבד.","החזר ok=true",{type:"object",additionalProperties:false,required:["ok"],properties:{ok:{type:"boolean"}}}); m.textContent=r.ok?"החיבור עובד ✅":"התקבלה תשובה לא צפויה."; }
+      catch(e){ m.textContent={auth:"המפתח לא תקין.",perm:"למפתח אין הרשאה למודל הזה.",bad:"הבקשה נדחתה. ייתכן שאין יתרה בחשבון.",net:"אין חיבור לאינטרנט.",rate:"יותר מדי בקשות, נסו בעוד דקה.",sdk:"רכיב החיבור לא נטען."}[e.code]||"החיבור לא הצליח."; } };
+    if(focus==="key") setTimeout(()=>{ $("#keySec").scrollIntoView({block:"start"}); $("#sKey").focus(); },50);
+  });
+}
+$("#btnSettings").onclick=()=>sheetSettings();
+$("#btnTips").onclick=sheetTips;
+
+/* ---------- התחלה ---------- */
+home();
+</script>
+</body>
+</html>
