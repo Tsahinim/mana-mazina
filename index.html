@@ -274,7 +274,7 @@ ul.plain{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;g
 <script>
 "use strict";
 /* ---------- נתונים קבועים (כלליים, בלי שום פרט אישי) ---------- */
-const VERSION = "1.6 · 18.9.2026";
+const VERSION = "1.7 · 18.9.2026";
 const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.126.0/+esm";
 const MODELS = [
   {id:"claude-opus-5",    name:"Opus 5, הכי חכם",        note:"ברירת מחדל"},
@@ -331,15 +331,17 @@ const DOCTOR = [
   "צמא חריג, השתנה תכופה, או כל תסמין אחר שמדאיג אתכם"
 ];
 const SOURCES = [
-  "Dietary Reference Intakes, National Academies (protein, calcium, iron targets)",
-  "USDA FoodData Central, SR Legacy (addition values)",
-  "Weaver et al. 2016, National Osteoporosis Foundation position statement on peak bone mass",
-  "AAP & NASPGHAN 2026, Clinical Practice Guideline: Faltering Weight",
-  "NICE NG75, Faltering growth: recognition and management",
-  "Ellyn Satter Institute, Division of Responsibility in Feeding",
-  "Israel National Biomonitoring Program 2022, iodine status in children",
-  "AASM 2016 consensus, recommended sleep for pediatric populations",
-  "Cochrane 2023, zinc supplementation and growth; de Beer 2012, dairy and stature"
+  "משרד הבריאות בישראל: סקר היוד הלאומי בילדים",
+  "משרד החקלאות האמריקאי (USDA): מאגר הרכב המזונות",
+  'האקדמיה הלאומית למדעים בארה"ב: הצריכה היומית המומלצת לפי גיל (DRI)',
+  "האקדמיה האמריקאית לרפואת ילדים (AAP): הנחיה קלינית, 2026",
+  "המכון הלאומי הבריטי לבריאות (NICE): הנחיה NG75",
+  'המכונים הלאומיים לבריאות בארה"ב (NIH): דפי מידע על ברזל',
+  "הקרן האמריקאית לאוסטאופורוזיס: נייר עמדה על בניית עצם, 2016",
+  "האקדמיה האמריקאית לרפואת שינה (AASM): המלצות שינה לילדים",
+  "ספריית קוקריין (Cochrane): סקירה על אבץ וגדילה, 2023",
+  "מכון אלין סאטר: חלוקת האחריות באכילה",
+  "תנובה: תווית היצרן של הגבינה הבולגרית"
 ];
 
 /* ---------- אחסון מקומי ---------- */
@@ -975,7 +977,7 @@ function sheetTips(){
   ${TIP_GROUPS.map(g=>`<div class="card"><h2><span aria-hidden="true">${g.em}</span> ${esc(g.title)}</h2><div class="mean">${g.items.map(t=>`<div class="row" style="display:block"><b>${esc(t[0])}.</b> ${esc(t[1])}</div>`).join("")}</div></div>`).join("")}
   <details class="card"><summary style="font-family:var(--display);font-weight:600;font-size:17px;cursor:pointer">מתי כדאי להתייעץ עם רופא ילדים</summary>
     <p class="small">רוב הזמן מספיקים מעקב רגוע ותזונה טובה. כדאי להתייעץ אם מופיע אחד מאלה:</p><ul class="plain">${DOCTOR.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>
-  <div class="linkrow"><button class="link" id="tipHow">איך האפליקציה עובדת, ומה המקורות</button></div>`,
+  <div class="linkrow"><button class="link" id="tipHow">איך האפליקציה עובדת, ומקורות המידע</button></div>`,
   ()=>{ $("#tipHow").onclick=()=>{ sheetRoot.innerHTML=""; sheetHow(); }; });
 }
 function sheetHow(){ openSheet("איך זה עובד",`<div class="card"><ul class="plain">
@@ -984,7 +986,8 @@ function sheetHow(){ openSheet("איך זה עובד",`<div class="card"><ul cla
   <li>הערכים של כל תוספת קבועים באפליקציה ואומתו מול מאגר משרד החקלאות האמריקאי (USDA). הגבינה הבולגרית לפי תווית היצרן. תוספת שעוד לא אומתה מסומנת "הערכה".</li>
   <li>היעדים היומיים הם ההמלצות הרשמיות לגיל (DRI). אף תוספת לא "מגביהה": המטרה היא שלא יחסר לגוף מה שהוא צריך כדי לגדול.</li>
   <li>שום דבר לא נשמר בשרת. השם, ההעדפות והמפתח נשמרים רק בטלפון הזה.</li></ul></div>
-  <h4>מקורות</h4><div class="src">${SOURCES.map(esc).join("<br>")}</div>`); }
+  <h4>מקורות מידע</h4><div class="card"><ul class="plain">${SOURCES.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+  <p class="note">את המנה עצמה מעריכה בינה מלאכותית (Claude), ולכן כתוב לידה "בערך". האפליקציה לא מחפשת מידע באינטרנט.</p>`); }
 function sheetSettings(focus,msg){
   const groups={dairy:"🧀 חלבי",egg:"🥚 ביצים",protein:"🍗 בשר ודגים",fat:"🫒 אנרגיה",side:"🥙 בצד",veg:"🍊 ירק ופרי"};
   const secKey=`<h4 id="keySec">חיבור לקלוד</h4>
