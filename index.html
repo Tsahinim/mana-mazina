@@ -208,6 +208,11 @@ textarea.field{resize:vertical}
 .list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
 .list li{display:flex;gap:12px;align-items:center;font-size:16px}
 .list .em{width:42px;height:42px;border-radius:14px;background:var(--yolk-soft);display:grid;place-items:center;font-size:22px;flex:none}
+.vals{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.vals th,.vals td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.vals tbody th{text-align:right;font-weight:500;color:var(--ink-2)}
+.vals thead th{font-weight:600;font-size:13px;color:var(--ink-2)}
+.vals td:nth-child(4){font-weight:700}
 .mean{display:flex;flex-direction:column;gap:12px}
 .mean .row{display:flex;gap:12px;align-items:flex-start;font-size:16px;color:var(--ink-2)}
 .mean .row .em{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:20px;flex:none;background:var(--herb-soft)}
@@ -280,7 +285,7 @@ const FAV_HINT = {
   "פסטה רוזה":"פסטה ברוטב עגבניות ושמנת (רוזה), בלי גבינה מעל",
   "פסטה רוזה עם בולגרית":"פסטה ברוטב עגבניות ושמנת (רוזה), עם גבינה בולגרית מפוררת מעל",
   "המבורגר ביתי":"המבורגר ביתי: לחמנייה עם קציצה מבשר בקר טחון איכותי, שהוכנה בבית",
-  "ארוחה במקדונלד'ס":"ארוחה במקדונלד'ס, בסניף כשר (בשרי): ההמבורגר של הרשת וצ'יפס של הרשת",
+  "ארוחה במקדונלד'ס":"ארוחה במקדונלד'ס: ההמבורגר של הרשת (בלי גבינה) וצ'יפס של הרשת",
   "טוסט פיתה":"טוסט פיתה: פיתה עם רוטב עגבניות, זיתים וגבינה צהובה, בטוסטר",
   "סלט ירקות":"סלט ירקות בלי בצל: עגבנייה, מלפפון ופלפל",
   "סלמון":"סלמון בתנור או במחבת, עם לימון או ברוטב סויה"
@@ -347,6 +352,7 @@ const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":
 const n0 = x=>Math.round(x||0);
 const n1 = x=>{const v=Math.round((x||0)*10)/10; return Number.isInteger(v)?String(v):v.toFixed(1);};
 const fmt = x=>n0(x).toLocaleString("he-IL");
+const r10 = x=>(Math.round((x||0)/10)*10).toLocaleString("he-IL");      // הערכות לא מציגים בדיוק של יחידה
 function ageBand(){
   if(!S.birth) return "young";
   const b=new Date(S.birth), t=new Date(); let a=t.getFullYear()-b.getFullYear();
@@ -390,8 +396,8 @@ function curVals(){ const {base,add}=totals(), t=T();
   return {p:{b:base.protein_g,a:add.protein_g,t:t.protein}, ca:{b:base.calcium_mg,a:add.calcium_mg,t:t.calcium}, fe:{b:base.iron_mg,a:add.iron_mg,t:t.iron}}; }
 function paintPlate(root){
   const v=curVals(); setArcs(root,v);
-  for(const n of NUTS){ const x=v[n.k], f=n.dec?n1:fmt;
-    const val=root.querySelector(`[data-v="${n.k}"]`); if(val) val.textContent=f(x.b+x.a);
+  for(const n of NUTS){ const x=v[n.k], f=n.dec?n1:fmt, ft=n.k==="p"?fmt:n.k==="ca"?r10:n1;
+    const val=root.querySelector(`[data-v="${n.k}"]`); if(val) val.textContent=ft(x.b+x.a);
     const pl=root.querySelector(`[data-plus="${n.k}"]`); if(pl){ pl.hidden=x.a<(n.dec?0.05:1); pl.textContent="+"+f(x.a); }
     const pc=root.querySelector(`[data-pc="${n.k}"]`); if(pc) pc.textContent=n0((x.b+x.a)/x.t*100)+"%"; }
   setGarnish(root,[...Object.keys(F.picked).map(id=>ADD_EMO[id]||"🍽️"),...F.customs.map(()=>"✏️")]);
@@ -430,27 +436,37 @@ async function askClaude(system,user,schema){
     if(e instanceof Anthropic.APIError) throw new AppErr("api",(e.status||"")+" "+e.message);
     throw new AppErr("net",String(e));
   }
+  track(r);
   if(r.stop_reason==="refusal") throw new AppErr("refusal","");
   if(r.stop_reason==="max_tokens") throw new AppErr("long","");
   const text=r.content.filter(b=>b.type==="text").map(b=>b.text).join("");
   try{ return JSON.parse(text); }catch(e){ throw new AppErr("parse",text.slice(0,300)); }
 }
 
+const PRICE={"claude-opus-5":[5,25],"claude-sonnet-5":[2,10],"claude-haiku-4-5":[1,5]};   // דולר למיליון טוקנים: קלט, פלט
+function track(r){
+  try{ const u=r.usage||{}, m=r.model&&PRICE[r.model]?r.model:(S.model||"claude-opus-5"), pr=PRICE[m]||PRICE["claude-opus-5"];
+    const i=(u.input_tokens||0)+(u.cache_creation_input_tokens||0)+(u.cache_read_input_tokens||0), o=u.output_tokens||0, c=(i*pr[0]+o*pr[1])/1e6;
+    const st=S.stats||{calls:0,inTok:0,outTok:0,usd:0}; st.calls++; st.inTok+=i; st.outTok+=o; st.usd+=c; S.stats=st; save();
+    window.__lastUsage={model:r.model,input:i,output:o,usd:c}; }catch(e){}
+}
 const str={type:"string"}, num={type:"number"};
 const SCHEMA_A={type:"object",additionalProperties:false,
-  required:["is_food","dish_name","kashrut","questions","portions"],
+  required:["is_food","dish_name","kashrut","questions","portion_question","portions","portion_default"],
   properties:{
     is_food:{type:"boolean"}, dish_name:str, kashrut:{type:"string",enum:["meat","dairy","parve"]},
     questions:{type:"array",items:{type:"object",additionalProperties:false,required:["text","options","default_index"],
       properties:{text:str, options:{type:"array",items:str}, default_index:{type:"integer"}}}},
+    portion_question:str, portion_default:{type:"integer"},
     portions:{type:"array",items:{type:"object",additionalProperties:false,required:["label","desc","grams"],
       properties:{label:str, desc:str, grams:num}}}
   }};
 function schemaB(ids){ return {type:"object",additionalProperties:false,
-  required:["base","base_note","has","missing","has_vitc","additions","tip","later"],
+  required:["kashrut","base","base_note","has","missing","has_vitc","additions","tip","later"],
   properties:{
-    base:{type:"object",additionalProperties:false,required:["kcal","protein_g","calcium_mg","iron_mg"],
-      properties:{kcal:num,protein_g:num,calcium_mg:num,iron_mg:num}},
+    kashrut:{type:"string",enum:["meat","dairy","parve"]},
+    base:{type:"object",additionalProperties:false,required:["kcal","protein_g","calcium_mg","iron_mg","vitc_mg"],
+      properties:{kcal:num,protein_g:num,calcium_mg:num,iron_mg:num,vitc_mg:num}},
     base_note:str, has:{type:"array",items:str}, missing:{type:"array",items:str}, has_vitc:{type:"boolean"},
     additions:{type:"array",items:{type:"object",additionalProperties:false,required:["id","why"],
       properties:{id:{type:"string",enum:ids}, why:str}}},
@@ -469,12 +485,12 @@ function brain(){
 3. ויטמין C באותה ארוחה משפר ספיגת ברזל מהצומח.
 4. משקאות עשירים (שוקו, מיץ) רק כחלק מהארוחה, לא בין הארוחות.
 5. אף פעם לא תוספי תזונה, לא ספירת קלוריות כמטרה, ולא עצות על כמה הילדה צריכה לאכול או לסיים. כל עצה היא על מה ההורה שם בצלחת. בלי שיפוטיות, גם כשמדובר באוכל מהיר.
-6. כשרות: ${S.kosher?`שומרים. לא מערבבים בשר וחלב, וממתינים ${S.waitHours} שעות אחרי בשרי לפני חלבי. דגים וביצים הם פרווה. למנה בשרית אסור להציע תוספת חלבית. מסעדות בשריות (כולל מקדונלד'ס כשר) הן בשריות.`:"לא רלוונטי."}
+6. בשר וחלב: ${S.kosher?`המשפחה לא שומרת כשרות, אבל בשביל נוחות בבטן לא משלבים בשר ומוצרי חלב באותה ארוחה, ומחכים ${S.waitHours==1?"שעה":S.waitHours+" שעות"} אחרי בשר לפני מוצרי חלב. לכן למנה עם בשר או עוף אל תציע תוספת חלבית, ולמנה חלבית אל תציע תוספת בשרית. דגים וביצים מתאימים לכל מנה. זה לא עניין דתי: אל תשתמש במילים כשר, כשרות או פרווה, ואל תניח מסעדה כשרה.`:"אין הגבלה, אפשר לשלב בשר וחלב."}
 7. מה שהיא לא אוכלת: ${S.dislikes||"לא צוין"}. אל תציע את אלה.
 8. כתוב בעברית פשוטה וקצרה, בלי מקפים ארוכים.`;
 }
 function addsTable(list){
-  return list.map(a=>`${a.id} | ${a.label} (${a.amount}) | ${a.k==="dairy"?"חלבי":a.k==="meat"?"בשרי":"פרווה"} | נותן: ${a.gives.join(", ")}`).join("\n");
+  return list.map(a=>`${a.id} | ${a.label} (${a.amount}) | ${a.k==="dairy"?"חלבי":a.k==="meat"?"בשרי":"מתאים לכל מנה"} | נותן: ${a.gives.join(", ")}`).join("\n");
 }
 async function callA(dish){
   const user=`המנה: "${FAV_HINT[dish]||dish}"
@@ -482,9 +498,17 @@ async function callA(dish){
 החזר:
 - is_food: האם זה מאכל או ארוחה.
 - dish_name: שם קצר ומסודר של המנה.
-- kashrut: meat אם יש בשר או עוף, dairy אם יש מוצרי חלב, אחרת parve.
+- kashrut (סוג המנה, לצורך ההפרדה בין בשר לחלב): meat אם יש בשר או עוף, dairy אם יש מוצרי חלב, אחרת parve.
 - questions: עד 2 שאלות הבהרה, רק אם התשובה משנה באמת את הערכים התזונתיים (למשל סוג השמנת, מטוגן או בתנור, עם ביצה או בלי, איזה גודל ארוחה ברשת). לכל שאלה 2 עד 4 אפשרויות קצרות, ו-default_index של האפשרות הנפוצה בבית ישראלי. אם אין צורך, רשימה ריקה. אל תוסיף אפשרות "אחר", היא מתווספת לבד.
-- portions: בדיוק 3 גדלים למנה הזו, מהקטן לגדול: label הוא "קטנה", "בינונית", "גדולה". desc במידות של בית שמתאימות למנה (כוסות, כפות, יחידות, פרוסות, גודל אגרוף או כף יד), מתאים לילדה בת 12. grams הוא המשקל המשוער של המנה כולה.`;
+- portion_question: שאלת הכמות, מנוסחת לפי המנה. למשל "כמה שניצלים?", "כמה קציצות?", "מה גודל קציצת ההמבורגר?", "כמה פסטה יבשה בישלתם לה?".
+- portions: 3 עד 5 אפשרויות כמות, מהקטנה לגדולה, ביחידה הטבעית של המנה הזו, כמו שאנשים באמת מודדים אותה:
+  * מנה שנספרת (שניצל, קציצות, נקניקיות, ביצים, משולשי פיצה, פנקייקים, כריכים): ביחידות. label כמו "חצי שניצל", "שניצל אחד", "שניצל וחצי", "2 שניצלים". ב-desc הגודל שהנחת ליחידה, למשל "שניצל בגודל כף יד, בערך 120 גרם".
+  * קציצת המבורגר: בגרמים של בשר, כמו בתפריט של מסעדה: "100 גרם", "150 גרם", "200 גרם". ב-desc למה זה דומה ("קציצה בגודל כף יד של ילדה").
+  * פסטה, אורז, פתיתים, קוסקוס: בגרמים של המוצר היבש, כי כך קל למדוד. label כמו "60 גרם", "90 גרם", "120 גרם". ב-desc רמז לפי האריזה וכמה יוצא מבושל, למשל "שקית של 500 גרם: קצת פחות מחמישית שקית. יוצא בערך כוס וחצי מבושלת".
+  * מרק: בקערות או במצקות. סלט, תבשיל ורוטב: בכוסות או בכפות הגשה. לחם ופיתה: בפרוסות או בחצאים.
+  * ארוחה של רשת מזון: בגדלים של הרשת (ארוחת ילדים, רגילה, גדולה), וב-desc מה כלול.
+  הכמויות מתאימות לילדה בת 12. grams הוא המשקל המשוער של המנה כולה כפי שהיא מוגשת (מבושלת, כולל רוטב ותוספות שהן חלק מהמנה).
+- portion_default: האינדקס (מ-0) של הכמות הנפוצה לילדה בת 12.`;
   return askClaude(brain(),user,SCHEMA_A);
 }
 function allowedAdds(){
@@ -504,18 +528,21 @@ async function callB(){
 ${qa}
 גודל המנה: ${F.portion.label}, ${F.portion.desc}${F.portion.grams?` (בערך ${n0(F.portion.grams)} גרם)`:""}
 
-טבלת התוספות המותרות (מזהה | שם וכמות | כשרות | מה נותן). מותר לבחור רק מתוכה:
+טבלת התוספות המותרות (מזהה | שם וכמות | סוג | מה נותן). מותר לבחור רק מתוכה:
 ${addsTable(list)}
 
+כל המאכלים שהיא מוכנה לאכול (להצעות של "בהמשך היום" בלבד): ${activeAdds().map(a=>a.label).join(", ")}.
+
 החזר:
-- base: הערכה של הערכים התזונתיים של המנה כפי שתוארה, בלי תוספות: kcal, protein_g, calcium_mg, iron_mg. מספרים מציאותיים. למנה של רשת מזון, לפי הערכים שהרשת מפרסמת.
+- kashrut: סוג המנה הסופי אחרי התשובות: meat אם יש בה בשר או עוף, dairy אם יש בה מוצר חלב כלשהו (גם גבינה מעל או שמנת ברוטב), אחרת parve. אם היא dairy, אל תציע תוספת בשרית. אם היא meat, אל תציע תוספת חלבית.
+- base: הערכה של הערכים התזונתיים של המנה כפי שתוארה, בלי תוספות: kcal, protein_g, calcium_mg, iron_mg, vitc_mg. מספרים מציאותיים, לפי טבלאות הרכב מזון מקובלות. למנה של רשת מזון, לפי הערכים שהרשת מפרסמת.
 - base_note: משפט אחד שמסביר על מה ההערכה מבוססת (כמויות עיקריות).
 - has: 1 עד 4 דברים שכבר יש במנה (למשל "פחמימה", "שומן", "ויטמין C").
 - missing: 1 עד 3 דברים שחסרים בה מתוך: חלבון, סידן, ברזל, אנרגיה, ירק, ויטמין C.
 - has_vitc: האם יש במנה מקור ממשי לוויטמין C.
 - additions: עד 12 מזהים מהטבלה, מסודרים מהמתאים ביותר לפחות מתאים. בחר רק תוספות שבאמת משתלבות במנה הזו בטעם ובהגשה, ושמשלימות את מה שחסר. אל תציע תוספת שכבר נמצאת במנה. לכל אחת why: חצי משפט על איך משלבים אותה במנה הזו.
 - tip: טיפ אחד קצר ומעשי למנה הזו, ברוח הכללים.
-- later: 1 עד 3 הצעות קצרות למה כדאי להשלים בהמשך היום, אחרי הארוחה הזו, כדי לסגור את מה שחסר בה (בעיקר סידן, ירק ופרי). כל הצעה היא מאכל שהיא אוכלת, מתוך הטבלה או מהמנות הקבועות. אם הארוחה בשרית, ציין שמוצרי חלב רק אחרי ההמתנה.`;
+- later: 1 עד 3 הצעות קצרות למה כדאי להשלים בהמשך היום, אחרי הארוחה הזו, כדי לסגור את מה שחסר בה (בעיקר סידן, ירק ופרי). כל הצעה היא רק מתוך רשימת המאכלים שהיא מוכנה לאכול, או מהמנות הקבועות שלה. אם בארוחה יש בשר או עוף, ציין שמוצרי חלב רק אחרי ההמתנה.`;
   return askClaude(brain(),user,schemaB(list.map(a=>a.id)));
 }
 async function callC(text){
@@ -530,9 +557,10 @@ const DEMO = {
     a:{is_food:true,dish_name:"פסטה רוזה עם בולגרית",kashrut:"dairy",
        questions:[{text:"איזו שמנת ברוטב?",options:["שמנת לבישול 15%","שמנת מתוקה 38%","בלי שמנת, רק חלב"],default_index:0},
                   {text:"מה בסיס הרוטב?",options:["רסק או רוטב עגבניות","עגבניות טריות מבושלות"],default_index:0}],
-       portions:[{label:"קטנה",desc:"כוס פסטה מבושלת, בגודל אגרוף",grams:190},{label:"בינונית",desc:"כוס וחצי פסטה",grams:280},{label:"גדולה",desc:"2 כוסות פסטה",grams:370}]},
-    b:{base:{kcal:480,protein_g:17,calcium_mg:190,iron_mg:2},
-       base_note:"לפי כוס וחצי פסטה מבושלת, 4 כפות רוטב עגבניות, 3 כפות שמנת 15% וקוביית בולגרית.",
+       portion_question:"כמה פסטה יבשה בישלתם לה?", portion_default:1,
+       portions:[{label:"60 גרם",desc:"שקית של 500 גרם: קצת יותר משמינית. יוצא בערך כוס מבושלת",grams:190},{label:"90 גרם",desc:"קצת פחות מחמישית שקית. יוצא בערך כוס וחצי מבושלת",grams:280},{label:"120 גרם",desc:"רבע שקית. יוצא בערך 2 כוסות מבושלות",grams:370}]},
+    b:{kashrut:"dairy",base:{kcal:480,protein_g:17,calcium_mg:190,iron_mg:2,vitc_mg:8},
+       base_note:"לפי 90 גרם פסטה יבשה, 4 כפות רוטב עגבניות, 3 כפות שמנת 15% וקוביית בולגרית.",
        has:["פחמימה","שומן","מעט סידן"],missing:["חלבון","סידן","ירק"],has_vitc:true,
        additions:[{id:"yellow_grated",why:"מפזרים מעל הפסטה החמה והיא נמסה."},{id:"veg_sticks",why:"בצד, בלי בצל. הפלפל מוסיף ויטמין C."},
                   {id:"shoko",why:"כוס קטנה ליד הארוחה, לא לפניה."},{id:"egg_hard",why:"ביצה קשה בצד או חתוכה מעל."},
@@ -544,9 +572,10 @@ const DEMO = {
     a:{is_food:true,dish_name:"פסטה רוזה",kashrut:"dairy",
        questions:[{text:"איזו שמנת ברוטב?",options:["שמנת לבישול 15%","שמנת מתוקה 38%","בלי שמנת, רק חלב"],default_index:0},
                   {text:"מה בסיס הרוטב?",options:["רסק או רוטב עגבניות","עגבניות טריות מבושלות"],default_index:0}],
-       portions:[{label:"קטנה",desc:"כוס פסטה מבושלת, בגודל אגרוף",grams:180},{label:"בינונית",desc:"כוס וחצי פסטה",grams:270},{label:"גדולה",desc:"2 כוסות פסטה",grams:360}]},
-    b:{base:{kcal:450,protein_g:13,calcium_mg:60,iron_mg:1.9},
-       base_note:"לפי כוס וחצי פסטה מבושלת, 4 כפות רוטב עגבניות ו-3 כפות שמנת 15%, בלי גבינה.",
+       portion_question:"כמה פסטה יבשה בישלתם לה?", portion_default:1,
+       portions:[{label:"60 גרם",desc:"שקית של 500 גרם: קצת יותר משמינית. יוצא בערך כוס מבושלת",grams:180},{label:"90 גרם",desc:"קצת פחות מחמישית שקית. יוצא בערך כוס וחצי מבושלת",grams:270},{label:"120 גרם",desc:"רבע שקית. יוצא בערך 2 כוסות מבושלות",grams:360}]},
+    b:{kashrut:"dairy",base:{kcal:450,protein_g:13,calcium_mg:60,iron_mg:1.9,vitc_mg:8},
+       base_note:"לפי 90 גרם פסטה יבשה, 4 כפות רוטב עגבניות ו-3 כפות שמנת 15%, בלי גבינה.",
        has:["פחמימה","שומן","מעט ויטמין C"],missing:["סידן","חלבון","ירק"],has_vitc:true,
        additions:[{id:"bulgarian",why:"מפוררת מעל, כמו שהיא אוהבת."},{id:"yellow_grated",why:"מפזרים מעל הפסטה החמה והיא נמסה."},
                   {id:"veg_sticks",why:"בצד, בלי בצל. הפלפל מוסיף ויטמין C."},{id:"shoko",why:"כוס קטנה ליד הארוחה, לא לפניה."},
@@ -557,8 +586,9 @@ const DEMO = {
   "שקשוקה":{
     a:{is_food:true,dish_name:"שקשוקה",kashrut:"parve",
        questions:[{text:"כמה ביצים במנה שלה?",options:["ביצה אחת","2 ביצים","בלי ביצים הפעם"],default_index:0}],
-       portions:[{label:"קטנה",desc:"חצי כוס רוטב עם הביצה",grams:180},{label:"בינונית",desc:"כוס רוטב עם הביצה",grams:280},{label:"גדולה",desc:"כוס וחצי רוטב",grams:380}]},
-    b:{base:{kcal:230,protein_g:10,calcium_mg:70,iron_mg:2.2},
+       portion_question:"כמה שקשוקה בצלחת?", portion_default:1,
+       portions:[{label:"חצי כוס רוטב",desc:"מנה קטנה, עם הביצה",grams:180},{label:"כוס רוטב",desc:"מנה רגילה, עם הביצה",grams:280},{label:"כוס וחצי רוטב",desc:"מנה גדולה, עם הביצה",grams:380}]},
+    b:{kashrut:"parve",base:{kcal:230,protein_g:10,calcium_mg:70,iron_mg:2.2,vitc_mg:45},
        base_note:"לפי כוס רוטב מעגבניות ופלפל, ביצה אחת וכף שמן.",
        has:["ויטמין C","חלבון מהביצה","ירק"],missing:["אנרגיה","סידן"],has_vitc:true,
        additions:[{id:"bread",why:"לניגוב הרוטב. מוסיף אנרגיה בלי להגדיל את הצלחת."},{id:"bulgarian",why:"מפוררת מעל השקשוקה החמה."},
@@ -639,7 +669,8 @@ async function start(dish){
     const a=await callA(dish);
     if(!a.is_food) throw new AppErr("notfood");
     a.questions=(a.questions||[]).slice(0,2).filter(q=>q.options&&q.options.length>=2);
-    if(!a.portions||a.portions.length<3) a.portions=[{label:"קטנה",desc:"בערך חצי צלחת",grams:0},{label:"בינונית",desc:"צלחת רגילה של ילדה",grams:0},{label:"גדולה",desc:"צלחת מלאה",grams:0}];
+    a.portions=(a.portions||[]).filter(x=>x&&x.label);
+    if(a.portions.length<2){ a.portions=[{label:"קטנה",desc:"בערך חצי צלחת",grams:0},{label:"בינונית",desc:"צלחת רגילה של ילדה",grams:0},{label:"גדולה",desc:"צלחת מלאה",grams:0}]; a.portion_default=1; a.portion_question=""; }
     F.a=a; nextQ();
   }catch(e){ showErr(e,()=>start(dish)); }
 }
@@ -671,17 +702,18 @@ function wireOther(cb){
 function screenMeat(){
   render(`<section class="screen">${crumbs()}${prog()}
     <div class="qhead"><span class="badge" aria-hidden="true">⏱️</span><h2>${esc(who())} אכלה בשרי ב${S.waitHours==1?"שעה האחרונה":S.waitHours+" השעות האחרונות"}?</h2></div>
-    <p class="lead">המנה פרווה. אם כן, אציע רק תוספות פרווה.</p>
+    <p class="lead">אם כן, לא אציע עכשיו תוספות חלביות, בגלל ההפרש שאתם שומרים בין בשר לחלב.</p>
     <div class="opts"><button class="opt def" data-v="0"><span class="em" aria-hidden="true">🧀</span><span class="t"><span>לא</span><small>אפשר גם תוספות חלביות</small></span><span class="pill">הכי נפוץ</span></button>
-      <button class="opt" data-v="1"><span class="em" aria-hidden="true">🍗</span><span class="t"><span>כן</span><small>רק תוספות פרווה</small></span></button></div></section>`);
+      <button class="opt" data-v="1"><span class="em" aria-hidden="true">🍗</span><span class="t"><span>כן</span><small>בלי תוספות חלביות הפעם</small></span></button></div></section>`);
   main.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{F.meatRecent=b.dataset.v==="1"; nextQ();});
   bindCrumbs();
 }
 function screenPortion(){
-  const P=F.a.portions.slice(0,3), sz=[20,30,40];
+  const P=F.a.portions.slice(0,5), n=P.length, d=Math.min(Math.max(F.a.portion_default|0,0),n-1);
+  const sz=i=>Math.round(18+(n>1?i/(n-1):.5)*22);
   render(`<section class="screen">${crumbs()}${prog()}
-    <div class="qhead"><span class="badge" aria-hidden="true">🍽️</span><h2>כמה יש בצלחת?</h2></div>
-    <div class="opts">${P.map((p,i)=>`<button class="opt ${i===1?"def":""}" data-i="${i}"><span class="plate" aria-hidden="true"><i style="width:${sz[i]}px;height:${sz[i]}px"></i></span><span class="t"><span>${esc(p.label)}</span><small>${esc(p.desc)}</small></span>${i===1?`<span class="pill">הכי נפוץ</span>`:""}</button>`).join("")}
+    <div class="qhead"><span class="badge" aria-hidden="true">${emo(F.a.dish_name)}</span><h2>${esc(F.a.portion_question||"כמה יש בצלחת?")}</h2></div>
+    <div class="opts">${P.map((p,i)=>`<button class="opt ${i===d?"def":""}" data-i="${i}"><span class="plate" aria-hidden="true"><i style="width:${sz(i)}px;height:${sz(i)}px"></i></span><span class="t"><span>${esc(p.label)}</span><small>${esc(p.desc)}</small></span>${i===d?`<span class="pill">הכי נפוץ</span>`:""}</button>`).join("")}
       <button class="opt ghost" id="other"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>אחר, אכתוב בעצמי</span></span></button></div>
     ${otherBox("למשל: 5 כפות, או חצי שניצל","כמות אחרת")}</section>`);
   main.querySelectorAll(".opt[data-i]").forEach(b=>b.onclick=()=>{F.portion=P[+b.dataset.i]; nextQ();});
@@ -691,15 +723,16 @@ function screenPortion(){
 }
 async function advise(){
   if(F.demo){
-    const d=DEMO[F.dish].b, i=F.a.portions.indexOf(F.portion), k=i===0?0.68:i===2?1.32:1;
+    const d=DEMO[F.dish].b, i=F.a.portions.indexOf(F.portion), k=i===0?0.67:i===2?1.33:1;
     const ok=new Set(allowedAdds().map(a=>a.id));
-    F.b={...d, base:{kcal:d.base.kcal*k,protein_g:d.base.protein_g*k,calcium_mg:d.base.calcium_mg*k,iron_mg:d.base.iron_mg*k},
+    F.b={...d, base:{kcal:d.base.kcal*k,protein_g:d.base.protein_g*k,calcium_mg:d.base.calcium_mg*k,iron_mg:d.base.iron_mg*k,vitc_mg:d.base.vitc_mg*k},
          additions:d.additions.filter(x=>ok.has(x.id))};
     return screenAdds(true);
   }
   loading("מחפש תוספות שמתאימות",["🧀","🥚","🍊"]);
   try{
     const b=await callB();
+    if(b.kashrut && S.kosher) F.a.kashrut=b.kashrut;          // סוג המנה (בשר או חלב) נקבע סופית אחרי התשובות
     const ok=new Map(allowedAdds().map(a=>[a.id,a])), seen=new Set();
     b.additions=(b.additions||[]).filter(x=>ok.has(x.id)&&!seen.has(x.id)&&seen.add(x.id));
     F.b=b; screenAdds(true);
@@ -750,12 +783,12 @@ async function addCustom(v){
   catch(e){ showErr(e,()=>screenAdds(true)); }
 }
 function totals(){
-  const base=F.b.base, add={kcal:0,protein_g:0,calcium_mg:0,iron_mg:0}, lines=[]; let vitc=!!F.b.has_vitc;
+  const base=F.b.base, add={kcal:0,protein_g:0,calcium_mg:0,iron_mg:0,vitc_mg:0}, lines=[]; let vitc=!!F.b.has_vitc;
   for(const [id,q] of Object.entries(F.picked)){ const a=addById(id); if(!a) continue;
-    add.kcal+=a.kcal*q; add.protein_g+=a.protein*q; add.calcium_mg+=a.calcium*q; add.iron_mg+=a.iron*q; if(a.vitc>=10) vitc=true;
-    lines.push({em:ADD_EMO[id]||"🍽️",label:a.label+(q>1?` (${q} מנות)`:""), kcal:a.kcal*q, p:a.protein*q, ca:a.calcium*q, fe:a.iron*q, est:!a.v}); }
+    add.kcal+=a.kcal*q; add.protein_g+=a.protein*q; add.calcium_mg+=a.calcium*q; add.iron_mg+=a.iron*q; add.vitc_mg+=(a.vitc||0)*q; if(a.vitc>=10) vitc=true;
+    lines.push({em:ADD_EMO[id]||"🍽️",amount:a.amount,label:a.label+(q>1?` (${q} מנות)`:""), kcal:a.kcal*q, p:a.protein*q, ca:a.calcium*q, fe:a.iron*q, est:!a.v}); }
   for(const c of F.customs){ add.kcal+=c.kcal; add.protein_g+=c.protein_g; add.calcium_mg+=c.calcium_mg; add.iron_mg+=c.iron_mg;
-    lines.push({em:"✏️",label:c.label, kcal:c.kcal, p:c.protein_g, ca:c.calcium_mg, fe:c.iron_mg, est:true}); }
+    lines.push({em:"✏️",amount:c.amount,label:c.label, kcal:c.kcal, p:c.protein_g, ca:c.calcium_mg, fe:c.iron_mg, est:true}); }
   return {base,add,lines,vitc};
 }
 function screenSum(){
@@ -768,7 +801,7 @@ function screenSum(){
     <div class="sumhero" id="sumPlate">
       <div class="name">${esc(F.a.dish_name)}${lines.length?" עם "+esc(lines.map(l=>l.label).join(", ")):""}</div>
       ${plateHTML(emo(F.a.dish_name))}
-      <div class="kcal">${fmt(tot.kcal)} <small>קלוריות, בערך</small></div>
+      <div class="kcal">${r10(tot.kcal)} <small>קלוריות, בערך</small></div>
       ${nrowsHTML(true)}
       <div class="tiny">${lines.length?"צבע מלא: המנה עצמה. צבע בהיר: התוספות. ":""}היעד הוא של יום שלם, גיל ${t.label}.</div></div>
     ${lines.length?`<div class="card"><h2>מה התוספות הוסיפו</h2><ul class="list">${lines.map(l=>`<li><span class="em" aria-hidden="true">${l.em}</span><span><b>${esc(l.label)}</b>${l.est?` <span class="tag est">הערכה</span>`:""}<br><span class="small">${what(l)}</span></span></li>`).join("")}</ul></div>`:""}
@@ -779,8 +812,23 @@ function screenSum(){
       <div class="row"><span class="em" aria-hidden="true">⚡</span><span><b>ברזל</b> נחוץ לאנרגיה, לריכוז ולגדילה.${vitc?" יש בארוחה ויטמין C, והוא משפר את ספיגת הברזל מהצומח.":" עגבנייה, פלפל או פרי הדר באותה ארוחה משפרים את הספיגה שלו מהצומח."}${ageBand()==="young"?' מגיל 14 היעד עולה ל-15 מ"ג.':""}</span></div>
       <div class="row"><span class="em" aria-hidden="true">🔥</span><span><b>קלוריות</b> הן הדלק של הגדילה. אין כאן יעד ואין ציון: המטרה היא רק שלא יחסר.</span></div>
     </div>
+    <div class="card"><h2>מה נכנס לחישוב</h2><ul class="plain">
+      <li><b>המנה:</b> ${esc(F.a.dish_name)}</li>
+      ${F.answers.length?`<li><b>פרטים:</b> ${esc(F.answers.map(x=>x.a).join(", "))}</li>`:""}
+      <li><b>כמות:</b> ${esc(F.portion.label)}${F.portion.desc&&F.portion.desc!==F.portion.label?" ("+esc(F.portion.desc)+")":""}</li>
+      ${lines.length?`<li><b>תוספות:</b> ${esc(lines.map(l=>l.label+": "+l.amount).join("; "))}</li>`:""}
+      ${F.b.base_note?`<li><b>הנחת החישוב:</b> ${esc(F.b.base_note)}</li>`:""}</ul>
+      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600;color:var(--herb-deep)">טבלת ערכים מלאה</summary>
+      <div style="overflow-x:auto;margin-top:8px"><table class="vals"><thead><tr><th></th><th>המנה</th><th>תוספות</th><th>סך הכל</th><th>יעד ליום</th></tr></thead><tbody>
+        <tr><th>קלוריות</th><td>${r10(base.kcal)}</td><td>${fmt(add.kcal)}</td><td>${r10(tot.kcal)}</td><td>אין יעד</td></tr>
+        <tr><th>חלבון, גרם</th><td>${fmt(base.protein_g)}</td><td>${n1(add.protein_g)}</td><td>${fmt(tot.p)}</td><td>${t.protein}</td></tr>
+        <tr><th>סידן, מ"ג</th><td>${r10(base.calcium_mg)}</td><td>${fmt(add.calcium_mg)}</td><td>${r10(tot.ca)}</td><td>${fmt(t.calcium)}</td></tr>
+        <tr><th>ברזל, מ"ג</th><td>${n1(base.iron_mg)}</td><td>${n1(add.iron_mg)}</td><td>${n1(tot.fe)}</td><td>${t.iron}</td></tr>
+        <tr><th>ויטמין C, מ"ג</th><td>${fmt(base.vitc_mg)}</td><td>${fmt(add.vitc_mg)}</td><td>${fmt((base.vitc_mg||0)+add.vitc_mg)}</td><td>45</td></tr>
+      </tbody></table></div>
+      <p class="tiny" style="margin:8px 0 0">ערכי המנה הם הערכה של קלוד לפי טבלאות הרכב מזון. ערכי התוספות קבועים (USDA)${lines.some(l=>l.est)?", חוץ מאלה שמסומנות הערכה":""}. היעדים: ההמלצות היומיות לגיל ${t.label} (DRI).</p></details></div>
     ${later.length?`<div class="card"><h2>מה כדאי להשלים בהמשך היום</h2><ul class="plain">${later.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
-    <p class="note"><span class="tag est">הערכה</span> ערכי המנה עצמה מוערכים${F.b.base_note?": "+esc(F.b.base_note):"."} ערכי התוספות מהרשימה קבועים, ממאגר USDA. המידע כללי ואינו תחליף לרופא או לדיאטנית ילדים.${F.demo?" זו מנת הדגמה.":""}</p>
+    <p class="note">המידע כללי ואינו תחליף לרופא או לדיאטנית ילדים.${F.demo?" זו מנת הדגמה.":""}</p>
     <div class="bottom flat"><button class="cta" id="new">מנה חדשה</button><div class="linkrow"><button class="link" id="edit">שינוי התוספות</button></div></div></section>`);
   later2(()=>paintPlate($("#sumPlate")));
   $("#new").onclick=home; $("#edit").onclick=()=>screenAdds(true); bindCrumbs();
@@ -824,6 +872,7 @@ function sheetSettings(focus,msg){
   <label class="f">מפתח API (מדביקים כאן)<input class="field" id="sKey" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-..." value="${esc(S.apiKey)}"></label>
   <label class="f">מודל<select class="field" id="sModel">${MODELS.map(m=>`<option value="${m.id}" ${S.model===m.id?"selected":""}>${esc(m.name)} (${esc(m.note)})</option>`).join("")}</select></label>
   <div id="keyMsg" class="small" aria-live="polite"></div>
+  ${S.stats&&S.stats.calls?`<p class="tiny" style="margin:0">שימוש במכשיר הזה עד עכשיו: ${S.stats.calls} פניות לקלוד, בערך ${S.stats.usd.toFixed(2)} דולר.</p>`:""}
   <button class="cta sec" id="sTest">בדיקת החיבור</button>`;
   const body=`${msg?`<div class="banner"><span>${esc(msg)}</span></div>`:""}
   ${S.apiKey?"":secKey}
@@ -832,9 +881,9 @@ function sheetSettings(focus,msg){
   <label class="f">תאריך לידה (קובע את היעדים היומיים)<input class="field" id="sBirth" type="date" value="${esc(S.birth)}"></label>
   <label class="f">מנות קבועות, מופרדות בפסיק<textarea class="field" id="sFavs" rows="3">${esc(S.favs.join(", "))}</textarea></label>
   <label class="f">מה היא לא אוכלת<input class="field" id="sDis" type="text" value="${esc(S.dislikes)}"></label>
-  <h4>כשרות</h4>
-  <div class="rowf"><span>שומרים כשרות</span><input class="switch" type="checkbox" id="sKosher" ${S.kosher?"checked":""} aria-label="שומרים כשרות"></div>
-  <label class="f">שעות המתנה אחרי בשרי<input class="field" id="sWait" type="number" min="0" max="6" step="1" inputmode="numeric" value="${esc(S.waitHours)}"></label>
+  <h4>בשר וחלב</h4>
+  <div class="rowf"><span>לא משלבים בשר וחלב באותה ארוחה</span><input class="switch" type="checkbox" id="sKosher" ${S.kosher?"checked":""} aria-label="לא משלבים בשר וחלב באותה ארוחה"></div>
+  <label class="f">כמה שעות מחכים אחרי בשר לפני מוצרי חלב<input class="field" id="sWait" type="number" min="0" max="6" step="1" inputmode="numeric" value="${esc(S.waitHours)}"></label>
   <h4>התוספות המאושרות</h4><p class="tiny" style="margin:0">רק מה שמסומן יוצע. כבו מה שהיא לא תסכים לו.</p>
   ${Object.entries(groups).map(([g,name])=>{const l=ADDS.filter(a=>a.g===g); return l.length?`<p class="small" style="margin:8px 0 0"><b>${name}</b></p>`+l.map(a=>`<div class="rowf"><span>${esc(a.label)} <span class="tiny">${esc(a.amount)}</span></span><input class="switch" type="checkbox" data-add="${a.id}" ${S.off.includes(a.id)?"":"checked"} aria-label="${esc(a.label)}"></div>`).join(""):"";}).join("")}
   ${S.apiKey?secKey:""}
