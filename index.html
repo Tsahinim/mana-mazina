@@ -420,7 +420,7 @@ async function askClaude(system,user,schema){
   const model=S.model||"claude-opus-5";
   const base={ model, max_tokens:8000, system, messages:[{role:"user",content:user}],
                output_config:{ format:{type:"json_schema",schema} } };
-  if(model!=="claude-haiku-4-5") base.output_config.effort="low";
+  if(model!=="claude-haiku-4-5"){ base.output_config.effort="low"; if(S.fast===true) base.thinking={type:"disabled"}; }   // נמדד: חוסך רק כשנייה, ולכן כבוי כברירת מחדל
   let r;
   try{
     if(model==="claude-opus-5"){
@@ -536,14 +536,14 @@ ${addsTable(list)}
 החזר:
 - kashrut: סוג המנה הסופי אחרי התשובות: meat אם יש בה בשר או עוף, dairy אם יש בה מוצר חלב כלשהו (גם גבינה מעל או שמנת ברוטב), אחרת parve. אם היא dairy, אל תציע תוספת בשרית. אם היא meat, אל תציע תוספת חלבית.
 - base: הערכה של הערכים התזונתיים של המנה כפי שתוארה, בלי תוספות: kcal, protein_g, calcium_mg, iron_mg, vitc_mg. מספרים מציאותיים, לפי טבלאות הרכב מזון מקובלות. למנה של רשת מזון, לפי הערכים שהרשת מפרסמת.
-- base_note: משפט אחד שמסביר על מה ההערכה מבוססת (כמויות עיקריות).
-- has: 1 עד 4 דברים שכבר יש במנה (למשל "פחמימה", "שומן", "ויטמין C").
-- missing: 1 עד 3 דברים שחסרים בה מתוך: חלבון, סידן, ברזל, אנרגיה, ירק, ויטמין C.
+- base_note: משפט קצר אחד, עד 20 מילים, שמסביר על מה ההערכה מבוססת (כמויות עיקריות).
+- has: 1 עד 3 דברים שכבר יש במנה, מילה או שתיים כל אחד (למשל "פחמימה", "שומן", "ויטמין C").
+- missing: 1 עד 3 דברים שבאמת חסרים בה, מתוך: חלבון, סידן, ברזל, אנרגיה, ירק, ויטמין C. אל תכלול רכיב שיש ממנו כמות סבירה במנה.
 - has_vitc: האם יש במנה מקור ממשי לוויטמין C.
-- additions: עד 12 מזהים מהטבלה, מסודרים מהמתאים ביותר לפחות מתאים. בחר רק תוספות שבאמת משתלבות במנה הזו בטעם ובהגשה, ושמשלימות את מה שחסר. אל תציע תוספת שכבר נמצאת במנה. לכל אחת why: חצי משפט על איך משלבים אותה במנה הזו.
-- tip: טיפ אחד קצר ומעשי למנה הזו, ברוח הכללים.
-- later: 1 עד 3 הצעות קצרות למה כדאי להשלים בהמשך היום, אחרי הארוחה הזו, כדי לסגור את מה שחסר בה (בעיקר סידן, ירק ופרי). כל הצעה היא רק מתוך רשימת המאכלים שהיא מוכנה לאכול, או מהמנות הקבועות שלה. אם בארוחה יש בשר או עוף, ציין שמוצרי חלב רק אחרי ההמתנה.`;
-  return askClaude(brain(),user,schemaB(list.map(a=>a.id)));
+- additions: עד 8 מזהים מהטבלה, מסודרים מהמתאים ביותר לפחות מתאים. בחר רק תוספות שבאמת משתלבות במנה הזו בטעם ובהגשה, כמו שהורה היה מגיש, ושמשלימות את מה שחסר. אל תציע תוספת שכבר נמצאת במנה או דומה מאוד למה שכבר יש בה. לכל אחת why: עד 8 מילים על איך משלבים אותה במנה הזו.
+- tip: טיפ אחד מעשי למנה הזו, עד 20 מילים, ברוח הכללים.
+- later: 1 עד 3 הצעות, כל אחת עד 10 מילים, למה כדאי להשלים בהמשך היום, אחרי הארוחה הזו, כדי לסגור את מה שחסר בה (בעיקר סידן, ירק ופרי). כל הצעה היא רק מתוך רשימת המאכלים שהיא מוכנה לאכול, או מהמנות הקבועות שלה. אם בארוחה יש בשר או עוף, ציין שמוצרי חלב רק אחרי ההמתנה.`;
+  return askClaude(brain(),user,schemaB(ADDS.map(a=>a.id)));
 }
 async function callC(text){
   const user=`ההורה רוצה להוסיף למנה "${F.a.dish_name}" תוספת משלו: "${text}".
@@ -642,9 +642,16 @@ function heroShow(){
   _heroT=setInterval(()=>{ const r=$("#heroPlate"); if(!r) return clearInterval(_heroT); i++;
     const c=r.querySelector(".ctr"); c.style.opacity=0; setTimeout(()=>{ c.textContent=emo(S.favs[i%S.favs.length]||""); c.style.opacity=1; paint(); },300); },2800);
 }
-function loading(msg,set){
-  render(`<section class="screen"><div class="load"><div class="spin" role="status" aria-label="טוען" style="width:170px">${plateHTML(set[0])}</div><h2>${esc(msg)}</h2><p class="tiny">זה לוקח כמה שניות</p></div></section>`);
+let _loadT=null;
+function loading(msg,set,steps){
+  clearInterval(_loadT);
+  steps=steps&&steps.length?steps:["זה לוקח כמה שניות"];
+  render(`<section class="screen"><div class="load"><div class="spin" role="status" aria-label="טוען" style="width:170px">${plateHTML(set[0])}</div><h2>${esc(msg)}</h2>
+    <p class="small" id="loadStep" style="min-height:1.5em;transition:opacity .3s ease">${esc(steps[0])}</p>
+    <p class="tiny">מנה שכבר בדקתם תיפתח בפעם הבאה מיד, בלי המתנה.</p></div></section>`);
   setArcs(main,{p:{b:.55,a:0,t:1},ca:{b:.55,a:0,t:1},fe:{b:.55,a:0,t:1}});
+  let i=0; _loadT=setInterval(()=>{ const el=$("#loadStep"); if(!el) return clearInterval(_loadT); i=Math.min(i+1,steps.length-1);
+    el.style.opacity=0; setTimeout(()=>{ el.textContent=steps[i]; el.style.opacity=1; },300); },3800);
 }
 function showErr(e,retry){
   const M={auth:"מפתח ה-API לא תקין. בדקו אותו בהגדרות.",perm:"למפתח אין הרשאה למודל הזה. נסו מודל אחר בהגדרות.",
@@ -657,14 +664,17 @@ function showErr(e,retry){
   $("#again").onclick=retry; $("#back").onclick=home; const s=$("#set"); if(s) s.onclick=()=>sheetSettings("key");
   bindCrumbs();
 }
-async function start(dish){
+async function start(dish,fresh){
+  dish=String(dish).replace(/\s+/g," ").trim();
   newFlow(dish);
   const demo=DEMO[dish];
   if(!S.apiKey){
     if(!demo){ return sheetSettings("key","כדי לבדוק מנות משלכם צריך לחבר מפתח API. בינתיים אפשר לנסות את שתי מנות ההדגמה."); }
     F.demo=true; F.a=demo.a; return nextQ();
   }
-  loading("בודק את המנה",[emo(dish),"🔎","✨"]);
+  const m=(S.memo||{})[dish];
+  if(m && m.a && m.b && !fresh) return screenMemo(m);
+  loading("בודק את המנה",[emo(dish)],["מזהה את המנה","חושב מה כדאי לשאול","בוחר איך הכי נוח למדוד את הכמות"]);
   try{
     const a=await callA(dish);
     if(!a.is_food) throw new AppErr("notfood");
@@ -672,7 +682,24 @@ async function start(dish){
     a.portions=(a.portions||[]).filter(x=>x&&x.label);
     if(a.portions.length<2){ a.portions=[{label:"קטנה",desc:"בערך חצי צלחת",grams:0},{label:"בינונית",desc:"צלחת רגילה של ילדה",grams:0},{label:"גדולה",desc:"צלחת מלאה",grams:0}]; a.portion_default=1; a.portion_question=""; }
     F.a=a; nextQ();
-  }catch(e){ showErr(e,()=>start(dish)); }
+  }catch(e){ showErr(e,()=>start(dish,true)); }
+}
+function screenMemo(m){
+  const when=m.ts?new Date(m.ts).toLocaleDateString("he-IL",{day:"numeric",month:"numeric"}):"";
+  render(`<section class="screen">
+    <div class="qhead"><span class="badge" aria-hidden="true">${emo(m.a.dish_name)}</span><h2>כמו בפעם הקודמת?</h2></div>
+    <div class="card"><ul class="plain">
+      <li><b>המנה:</b> ${esc(m.a.dish_name)}</li>
+      ${m.answers.length?`<li><b>פרטים:</b> ${esc(m.answers.map(x=>x.a).join(", "))}</li>`:""}
+      <li><b>כמות:</b> ${esc(m.portion.label)}${m.portion.desc&&m.portion.desc!==m.portion.label?" ("+esc(m.portion.desc)+")":""}</li></ul>
+      ${when?`<p class="tiny" style="margin:10px 0 0">נשמר ב-${when}, במכשיר הזה.</p>`:""}</div>
+    <div class="opts">
+      <button class="opt def" id="mYes"><span class="em" aria-hidden="true">⚡</span><span class="t"><span>כן, אותו דבר</span><small>ישר לתוספות, בלי המתנה</small></span></button>
+      <button class="opt" id="mNo"><span class="em" aria-hidden="true">✏️</span><span class="t"><span>לא, משהו השתנה</span><small>אענה על השאלות מחדש</small></span></button></div>
+    <div class="linkrow"><button class="link" id="mBack">חזרה</button></div></section>`);
+  $("#mYes").onclick=()=>{ F.a=JSON.parse(JSON.stringify(m.a)); F.answers=m.answers.map(x=>({...x})); F.qi=F.a.questions.length; F.portion={...m.portion}; F.memo=m; nextQ(); };
+  $("#mNo").onclick=()=>start(F.dish,true);
+  $("#mBack").onclick=home;
 }
 function nextQ(){
   if(F.qi<F.a.questions.length) return screenQ();
@@ -729,14 +756,23 @@ async function advise(){
          additions:d.additions.filter(x=>ok.has(x.id))};
     return screenAdds(true);
   }
-  loading("מחפש תוספות שמתאימות",["🧀","🥚","🍊"]);
+  if(F.memo && F.memo.b && !(F.memo.limited && F.meatRecent===false)){
+    const ok=new Set(allowedAdds().map(a=>a.id));
+    F.b={...F.memo.b, additions:F.memo.b.additions.filter(x=>ok.has(x.id))}; F.fromMemo=true;
+    return screenAdds(true);
+  }
+  loading("מחפש תוספות שמתאימות",[emo(F.a.dish_name)],["מעריך את הערכים של המנה","בודק מה חסר בה","בוחר תוספות מהרשימה של "+who(),"מנסח טיפ קטן למנה"]);
   try{
     const b=await callB();
     if(b.kashrut && S.kosher) F.a.kashrut=b.kashrut;          // סוג המנה (בשר או חלב) נקבע סופית אחרי התשובות
     const ok=new Map(allowedAdds().map(a=>[a.id,a])), seen=new Set();
     b.additions=(b.additions||[]).filter(x=>ok.has(x.id)&&!seen.has(x.id)&&seen.add(x.id));
-    F.b=b; screenAdds(true);
+    F.b=b; F.fromMemo=false; remember(); screenAdds(true);
   }catch(e){ showErr(e,advise); }
+}
+function remember(){
+  try{ const M=S.memo||{}; M[F.dish]={a:F.a,answers:F.answers,portion:F.portion,b:F.b,limited:F.meatRecent===true,ts:Date.now()};
+    const keys=Object.keys(M).sort((x,y)=>(M[y].ts||0)-(M[x].ts||0)); keys.slice(30).forEach(k=>delete M[k]); S.memo=M; save(); }catch(e){}
 }
 const addById=id=>ADDS.find(a=>a.id===id);
 function sumLabel(){ const n=Object.keys(F.picked).length+F.customs.length; return n?`לסיכום עם ${n===1?"תוספת אחת":n+" תוספות"}`:"לסיכום בלי תוספות"; }
@@ -745,6 +781,7 @@ function screenAdds(first){
   const b=F.b, list=b.additions.slice(0,F.shown), more=b.additions.length>F.shown;
   render(`<section class="screen">${crumbs()}
     <div class="live" id="live">${plateHTML(emo(F.a.dish_name))}${nrowsHTML(false)}</div>
+    ${F.fromMemo?`<div class="banner"><span>ההצעות נשמרו מהפעם הקודמת.</span><button id="reAsk">רענון</button></div>`:""}
     <div><h2>מה להוסיף?</h2>
       <p style="margin:8px 0 0">${b.has.map(x=>`<span class="tag has">יש: ${esc(x)}</span>`).join("")}${b.missing.map(x=>`<span class="tag miss">חסר: ${esc(x)}</span>`).join("")}</p></div>
     <div class="opts" id="addList">
@@ -771,6 +808,7 @@ function screenAdds(first){
   });
   main.querySelectorAll("#addList .opt[data-c]").forEach(el=>el.onclick=()=>{ F.customs.splice(+el.dataset.c,1); keep(screenAdds); });
   $("#more").onclick=()=>{ if(more){ F.shown+=4; keep(screenAdds); } };
+  const ra=$("#reAsk"); if(ra) ra.onclick=()=>{ F.memo=null; F.fromMemo=false; F.picked={}; F.customs=[]; F.shown=4; advise(); };
   wireOther(addCustom);
   $("#otherOk").textContent="הוסף";
   $("#sum").onclick=screenSum; bindCrumbs();
@@ -888,13 +926,14 @@ function sheetSettings(focus,msg){
   ${Object.entries(groups).map(([g,name])=>{const l=ADDS.filter(a=>a.g===g); return l.length?`<p class="small" style="margin:8px 0 0"><b>${name}</b></p>`+l.map(a=>`<div class="rowf"><span>${esc(a.label)} <span class="tiny">${esc(a.amount)}</span></span><input class="switch" type="checkbox" data-add="${a.id}" ${S.off.includes(a.id)?"":"checked"} aria-label="${esc(a.label)}"></div>`).join(""):"";}).join("")}
   ${S.apiKey?secKey:""}
   <button class="cta" id="sSave">שמירה</button>
-  <div class="linkrow"><button class="link" id="sWipe">מחיקת המפתח מהטלפון הזה</button></div>`;
+  <div class="linkrow"><button class="link" id="sWipe">מחיקת המפתח מהטלפון הזה</button>${S.memo&&Object.keys(S.memo).length?`<button class="link" id="sForget">שכח מנות שמורות (${Object.keys(S.memo).length})</button>`:""}</div>`;
   openSheet("הגדרות",body,close=>{
     const read=()=>{ S.name=$("#sName").value.trim(); S.birth=$("#sBirth").value; S.favs=$("#sFavs").value.split(/[,\n]/).map(x=>x.trim()).filter(Boolean);
       if(!S.favs.length) S.favs=DEFAULT_FAVS.slice(); S.dislikes=$("#sDis").value.trim(); S.kosher=$("#sKosher").checked;
       S.waitHours=Math.max(0,Math.min(6,parseInt($("#sWait").value,10)||0)); S.apiKey=$("#sKey").value.trim(); S.model=$("#sModel").value;
       S.off=[...sheetRoot.querySelectorAll("[data-add]")].filter(x=>!x.checked).map(x=>x.dataset.add); save(); };
     $("#sSave").onclick=()=>{ read(); sheetRoot.innerHTML=""; home(); };
+    const fg=$("#sForget"); if(fg) fg.onclick=()=>{ S.memo={}; save(); fg.textContent="נמחק"; fg.disabled=true; };
     $("#sWipe").onclick=()=>{ $("#sKey").value=""; read(); $("#keyMsg").textContent="המפתח נמחק מהטלפון הזה."; };
     $("#sTest").onclick=async()=>{ read(); const m=$("#keyMsg"); if(!S.apiKey){ m.textContent="קודם הדביקו מפתח."; return; }
       m.textContent="בודק..."; try{ const r=await askClaude("ענה ב-JSON בלבד.","החזר ok=true",{type:"object",additionalProperties:false,required:["ok"],properties:{ok:{type:"boolean"}}}); m.textContent=r.ok?"החיבור עובד ✅":"התקבלה תשובה לא צפויה."; }
