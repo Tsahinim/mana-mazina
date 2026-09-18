@@ -614,7 +614,7 @@ function prog(extra=0){ const p=Math.round((stepIndex()+1+extra)/(totalSteps()+1
 function home(){
   F=null;
   render(`<section class="screen">
-    ${!S.apiKey?`<div class="banner"><span>מצב הדגמה: עובדות שתי הפסטות והשקשוקה.</span><button id="toKey">חיבור</button></div>`:""}
+    ${!S.apiKey?`<div class="banner"><span>מצב הדגמה: עובדות רק שתי הפסטות והשקשוקה.</span><button id="toKey">הפעלה</button></div>`:""}
     <div class="homehero"><div class="txt"><p class="hello" style="margin:0">${hello()} 👋</p>
       <h1>מה ${esc(who())} אוכלת עכשיו?</h1></div><div id="heroPlate">${plateHTML(emo(S.favs[0]||""))}</div></div>
     <p class="lead">כותבים מנה, ומקבלים תוספות קטנות שממלאות את הצלחת במה שחסר.</p>
@@ -630,7 +630,7 @@ function home(){
   heroShow();
   $("#askForm").onsubmit=e=>{e.preventDefault(); const v=$("#dish").value.trim(); if(v) start(v); else $("#dish").focus();};
   main.querySelectorAll("[data-dish]").forEach(b=>b.onclick=()=>start(b.dataset.dish));
-  const k=$("#toKey"); if(k) k.onclick=()=>sheetSettings("key");
+  const k=$("#toKey"); if(k) k.onclick=()=>screenActivate();
 }
 let _heroT=null;
 function heroShow(){
@@ -669,7 +669,7 @@ async function start(dish,fresh){
   newFlow(dish);
   const demo=DEMO[dish];
   if(!S.apiKey){
-    if(!demo){ return sheetSettings("key","כדי לבדוק מנות משלכם צריך לחבר מפתח API. בינתיים אפשר לנסות את שתי מנות ההדגמה."); }
+    if(!demo){ return screenActivate(dish); }
     F.demo=true; F.a=demo.a; return nextQ();
   }
   const m=(S.memo||{})[dish];
@@ -683,6 +683,35 @@ async function start(dish,fresh){
     if(a.portions.length<2){ a.portions=[{label:"קטנה",desc:"בערך חצי צלחת",grams:0},{label:"בינונית",desc:"צלחת רגילה של ילדה",grams:0},{label:"גדולה",desc:"צלחת מלאה",grams:0}]; a.portion_default=1; a.portion_question=""; }
     F.a=a; nextQ();
   }catch(e){ showErr(e,()=>start(dish,true)); }
+}
+function screenActivate(dish){
+  F=null;
+  render(`<section class="screen">
+    <div class="qhead"><span class="badge" aria-hidden="true">🔑</span><h2>הפעלה, פעם אחת</h2></div>
+    <p class="lead">מעתיקים את קוד ההפעלה מההודעה שקיבלתם, ולוחצים כאן:</p>
+    <button class="cta" id="actPaste">הדבקת הקוד</button>
+    <label class="f">או מדביקים ידנית<input class="field" id="actKey" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-..."></label>
+    ${S.name?"":`<label class="f">שם הילדה (לא חובה)<input class="field" id="actName" type="text" autocomplete="off"></label>`}
+    <div id="actMsg" class="small" aria-live="polite" style="min-height:1.5em"></div>
+    <div class="bottom flat"><button class="cta sec" id="actGo">בדיקה ושמירה</button><div class="linkrow"><button class="link" id="actBack">חזרה</button></div></div></section>`);
+  const msg=$("#actMsg"), fld=$("#actKey");
+  const pull=t=>{ const m=String(t||"").match(/sk-ant-[A-Za-z0-9_\-]{20,}/); return m?m[0]:""; };
+  const go=async()=>{
+    const k=pull(fld.value); if(!k){ msg.textContent="לא מצאתי כאן קוד. הקוד מתחיל ב-sk-ant."; return; }
+    const nm=$("#actName"); if(nm&&nm.value.trim()) S.name=nm.value.trim();
+    S.apiKey=k; msg.textContent="בודק את החיבור..."; $("#actGo").disabled=true;
+    try{ await askClaude("ענה ב-JSON בלבד.","החזר ok=true",{type:"object",additionalProperties:false,required:["ok"],properties:{ok:{type:"boolean"}}});
+      save(); msg.textContent="מחובר ✅"; setTimeout(()=>{ dish?start(dish):home(); },700); }
+    catch(e){ S.apiKey=""; $("#actGo").disabled=false;
+      msg.textContent={auth:"הקוד לא תקין. כדאי להעתיק אותו שוב מההודעה.",bad:"הבקשה נדחתה. ייתכן שנגמרה היתרה בחשבון.",net:"אין חיבור לאינטרנט.",sdk:"אין חיבור לאינטרנט.",rate:"יותר מדי בקשות, נסו בעוד דקה."}[e.code]||"החיבור לא הצליח. נסו שוב."; }
+  };
+  $("#actPaste").onclick=async()=>{
+    try{ const t=await navigator.clipboard.readText(); const k=pull(t);
+      if(k){ fld.value=k; msg.textContent="הקוד הודבק."; go(); } else { msg.textContent="בלוח ההעתקה אין קוד. העתיקו את ההודעה עם הקוד ונסו שוב."; } }
+    catch(e){ msg.textContent="לחצו לחיצה ארוכה בשדה שלמטה ובחרו הדבקה."; fld.focus(); }
+  };
+  fld.oninput=()=>{ if(pull(fld.value)) msg.textContent="הקוד הודבק. לחצו בדיקה ושמירה."; };
+  $("#actGo").onclick=go; $("#actBack").onclick=home;
 }
 function screenMemo(m){
   const when=m.ts?new Date(m.ts).toLocaleDateString("he-IL",{day:"numeric",month:"numeric"}):"";
